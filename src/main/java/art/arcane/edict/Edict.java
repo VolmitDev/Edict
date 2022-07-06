@@ -8,6 +8,8 @@ import art.arcane.edict.handlers.handlers.*;
 import art.arcane.edict.message.Message;
 import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.user.SystemUser;
+import art.arcane.edict.user.User;
+import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -83,6 +85,15 @@ public class Edict {
                 }
             }
         }
+    }
+
+    /**
+     * Run a command through the system.
+     * @param command the command to run
+     * @param user the user that ran the command
+     */
+    public void command(String command, User user) {
+        throw new NotImplementedException();
     }
 
     /**

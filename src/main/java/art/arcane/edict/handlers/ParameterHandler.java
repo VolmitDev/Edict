@@ -74,15 +74,18 @@ public interface ParameterHandler<T> {
      */
     default List<T> getPossibilities(String input) {
         if (input.trim().isEmpty()) {
-            List<T> f = getPossibilities();
-            return f == null ? new ArrayList<>() : f;
+            return getPossibilities();
         }
 
         input = input.trim();
         List<T> possible = getPossibilities();
         List<T> matches = new ArrayList<>();
 
-        if (possible == null || possible.isEmpty()) {
+        if (possible == null) {
+            return null;
+        }
+
+        if (possible.isEmpty()) {
             return matches;
         }
 
