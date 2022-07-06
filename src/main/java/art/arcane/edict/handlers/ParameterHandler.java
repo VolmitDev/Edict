@@ -1,7 +1,7 @@
 package art.arcane.edict.handlers;
 
-import art.arcane.edict.exceptions.ParsingException;
-import art.arcane.edict.exceptions.WhichException;
+import art.arcane.edict.exception.ParsingException;
+import art.arcane.edict.exception.WhichException;
 
 import java.util.ArrayList;
 import java.util.List;

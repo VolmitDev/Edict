@@ -1,10 +1,8 @@
 package art.arcane.edict.handlers.handlers;
 
-import art.arcane.edict.exceptions.ParsingException;
-import art.arcane.edict.exceptions.WhichException;
+import art.arcane.edict.exception.ParsingException;
 import art.arcane.edict.handlers.ParameterHandler;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 
 import static org.junit.jupiter.api.Assertions.*;
 

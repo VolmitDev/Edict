@@ -9,6 +9,12 @@ public interface Permission {
      * Some permission node.
      * @return the permission node
      */
-    Object get();
+    String get();
+
+    /**
+     * Parent permission node.
+     * @return the parent permission node
+     */
+    Permission getParent();
 
 }

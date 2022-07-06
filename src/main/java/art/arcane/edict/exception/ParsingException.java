@@ -1,4 +1,4 @@
-package art.arcane.edict.exceptions;
+package art.arcane.edict.exception;
 
 /**
  * Thrown when a  parameter is parsed, but parsing fails.

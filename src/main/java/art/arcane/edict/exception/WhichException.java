@@ -1,4 +1,4 @@
-package art.arcane.edict.exceptions;
+package art.arcane.edict.exception;
 
 import art.arcane.edict.handlers.ParameterHandler;
 

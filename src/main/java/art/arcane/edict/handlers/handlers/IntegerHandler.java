@@ -1,7 +1,7 @@
 package art.arcane.edict.handlers.handlers;
 
 
-import art.arcane.edict.exceptions.ParsingException;
+import art.arcane.edict.exception.ParsingException;
 import art.arcane.edict.handlers.ParameterHandler;
 import art.arcane.edict.util.Randoms;
 import org.jetbrains.annotations.NotNull;
