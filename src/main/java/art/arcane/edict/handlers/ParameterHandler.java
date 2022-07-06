@@ -28,7 +28,7 @@ public interface ParameterHandler<T> {
     boolean supports(Class<?> type);
 
     /**
-     * Converting the type back to a string (inverse of the {@link #parse(String) parse} method)
+     * Converting the type back to a string (inverse of the {@link #parse(String, String) parse} method)
      *
      * @param t The input of the designated type to convert to a String
      * @return The resulting string
@@ -137,31 +137,21 @@ public interface ParameterHandler<T> {
     default int getMultiplier(AtomicReference<String> value) {
         int multiplier = 1;
         String in = value.get();
-        boolean valid = true;
-        while (valid) {
-            boolean trim = false;
+        while (true) {
             if (in.toLowerCase().endsWith("k")) {
                 multiplier *= 1000;
-                trim = true;
             } else if (in.toLowerCase().endsWith("m")) {
                 multiplier *= 1000000;
-                trim = true;
             } else if (in.toLowerCase().endsWith("h")) {
                 multiplier *= 100;
-                trim = true;
             } else if (in.toLowerCase().endsWith("c")) {
                 multiplier *= 16;
-                trim = true;
             } else if (in.toLowerCase().endsWith("r")) {
-                multiplier *= (16 * 32);
-                trim = true;
+                multiplier *= 512;
             } else {
-                valid = false;
+                break;
             }
-
-            if (trim) {
-                in = in.substring(0, in.length() - 1);
-            }
+            in = in.substring(0, in.length() - 1);
         }
 
         value.set(in);

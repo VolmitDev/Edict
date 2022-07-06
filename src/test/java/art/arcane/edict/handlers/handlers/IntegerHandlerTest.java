@@ -4,8 +4,6 @@ import art.arcane.edict.exceptions.ParsingException;
 import art.arcane.edict.handlers.ParameterHandler;
 import org.junit.jupiter.api.Test;
 
-import java.text.ParseException;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class IntegerHandlerTest {
