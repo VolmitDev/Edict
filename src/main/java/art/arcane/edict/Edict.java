@@ -10,7 +10,11 @@ import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.user.SystemUser;
 import art.arcane.edict.user.User;
 import org.apache.commons.lang3.NotImplementedException;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The main System.
@@ -50,16 +54,18 @@ public class Edict {
      * Create a new command system.
      */
     public Edict() {
-        this(null, null, null);
+        this(new ArrayList<>(), null, null, null);
     }
 
     /**
      * Create a new command system.
+     * @param commandRoots the roots of the commands.
+     * TODO: You were here
      * @param systemUser the user to output system messages to. By default, uses {@link SystemUser} (Using System.out.)
      * @param handlers the handlers you wish to register. By default, {@link #defaultHandlers} are already registered.
      * @param contextHandlers the context handlers you wish to register. By default, there are no context handlers.
      */
-    public Edict(@Nullable SystemUser systemUser, @Nullable ParameterHandler<?>[] handlers, @Nullable ContextHandler<?>[] contextHandlers) {
+    public Edict(@NotNull List<Class<?>> commandRoots, @Nullable SystemUser systemUser, @Nullable ParameterHandler<?>[] handlers, @Nullable ContextHandler<?>[] contextHandlers) {
 
         // System
         this.systemUser = systemUser;

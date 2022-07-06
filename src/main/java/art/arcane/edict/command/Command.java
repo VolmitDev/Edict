@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
-public @interface Edict {
+public @interface Command {
 
     String NO_PERMISSION_NEEDED = "";
 

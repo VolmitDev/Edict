@@ -2,6 +2,7 @@ package art.arcane.edict.handlers;
 
 import art.arcane.edict.exception.ParsingException;
 import art.arcane.edict.exception.WhichException;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -134,7 +135,7 @@ public interface ParameterHandler<T> {
      * @param value The inputted value
      * @return The multiplier
      */
-    default int getMultiplier(AtomicReference<String> value) {
+    default int getMultiplier(@NotNull AtomicReference<String> value) {
         int multiplier = 1;
         String in = value.get();
         while (true) {
