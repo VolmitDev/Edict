@@ -27,20 +27,23 @@ import java.util.MissingResourceException;
  * @param permission permission node for this category
  * @param system the command system
  */
-public record VCommands(@NotNull String name, @NotNull Command command, @Nullable VCommands parent, @NotNull List<VCommandable> children, @NotNull Permission permission, @NotNull Edict system) implements VCommandable {
+public record VCommands(@NotNull String name, @NotNull Command command, @NotNull Object instance, @Nullable VCommands parent, @NotNull List<VCommandable> children, @NotNull Permission permission, @NotNull Edict system) implements VCommandable {
 
     /**
      * Create a new category class.
      * This contains children: All methods of the clazz parameter that are annotated by @Command + any field declarations that are of a type that is annotated by @Command.
      * Note, there is NO check for circular references, so make sure to prevent this yourself.
      * TODO: Fix that
-     * @param clazz the class to create the edict from
+     * @param instance the class to create the edict from
      * @param parent the parent {@link VCommands} ({@code null} if clazz is the root)
      * @param system the system
      * @return a new category, or {@code null} if there are no commands in this category
      * @throws MissingResourceException if there is no @Command annotation on this class despite it being called as such
      */
-    public static @Nullable VCommands fromClass(@NotNull Class<?> clazz, @Nullable VCommands parent, @NotNull Edict system) throws MissingResourceException {
+    public static @Nullable VCommands fromClass(@NotNull Object instance, @Nullable VCommands parent, @NotNull Edict system) throws MissingResourceException {
+
+        // Class
+        Class<?> clazz = instance.getClass();
 
         // Check for annotation
         if (!clazz.isAnnotationPresent(Command.class)) {
@@ -52,6 +55,7 @@ public record VCommands(@NotNull String name, @NotNull Command command, @Nullabl
         VCommands category = new VCommands(
                 annotation.name().isBlank() ? clazz.getSimpleName() : annotation.name(),
                 annotation,
+                instance,
                 parent,
                 new ArrayList<>(),
                 system.makePermission(parent == null ? null : parent.permission, annotation.permission()),
@@ -78,6 +82,7 @@ public record VCommands(@NotNull String name, @NotNull Command command, @Nullabl
         // Loop over fields to find more command categories
         for (Field field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
+
             if (!field.getType().isAnnotationPresent(Command.class)) {
                 system.d(new StringMessage(clazz.getSimpleName() + "#" + field.getName() + " not registered because not annotated by @Command"));
                 continue;

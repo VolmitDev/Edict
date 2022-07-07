@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The main System.
@@ -89,8 +90,8 @@ public class Edict {
     /**
      * Create a new command system.
      */
-    public Edict(@NotNull Class<?>... commandRoots) {
-        this(new ArrayList<>(List.of(commandRoots)), null, null, null, null);
+    public Edict(@NotNull Object... commandRoots) {
+        this(List.of(commandRoots), null, null, null, null);
     }
 
     /**
@@ -101,16 +102,16 @@ public class Edict {
      * @param handlers the handlers you wish to register. By default, {@link #defaultHandlers} are already registered.
      * @param contextHandlers the context handlers you wish to register. By default, there are no context handlers.
      */
-    public Edict(@NotNull List<Class<?>> commandRoots, @Nullable BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @Nullable SystemUser systemUser, @Nullable ParameterHandler<?>[] handlers, @Nullable ContextHandler<?>[] contextHandlers) {
+    public Edict(@NotNull List<Object> commandRoots, @Nullable BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @Nullable SystemUser systemUser, @Nullable ParameterHandler<?>[] handlers, @Nullable ContextHandler<?>[] contextHandlers) {
 
         // Permission factory
         this.permissionFactory = permissionFactory == null ? defaultPermissionFactory : permissionFactory;
 
         // Command Roots
-        for (Class<?> root : commandRoots) {
-            VCommands vRoot = VCommands.fromClass(root, null, this);
+        for (Object root : commandRoots) {
+            VCommands vRoot = VCommands.fromClass(root.getClass(), null, this);
             if (vRoot == null) {
-                w(new StringMessage("Could not register root " + root.getSimpleName() + "!"));
+                w(new StringMessage("Could not register root " + root.getClass().getSimpleName() + "!"));
                 continue;
             }
             rootCommands.add(vRoot);
