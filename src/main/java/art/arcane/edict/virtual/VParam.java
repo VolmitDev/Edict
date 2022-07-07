@@ -25,7 +25,7 @@ public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNul
      * @return a list of parameters. Can be empty if there are none
      * @throws MissingResourceException if any of the parameters is not annotated by @Param (making it invalid)
      */
-    public static @NotNull List<VParam> fromMethod(@NotNull Method method, @NotNull Edict system) throws MissingResourceException {
+    public static @NotNull List<VParam> paramsFromMethod(@NotNull Method method, @NotNull Edict system) throws MissingResourceException {
         List<VParam> params = new ArrayList<>();
         for (Parameter parameter : method.getParameters()) {
             if (!parameter.isAnnotationPresent(Param.class)) {

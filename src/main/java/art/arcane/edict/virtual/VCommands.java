@@ -11,7 +11,6 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.MissingResourceException;
 
@@ -73,7 +72,7 @@ public record VCommands(@NotNull String name, @NotNull Command command, @NotNull
                     annotation,
                     category,
                     method,
-                    VParam.fromMethod(method, system),
+                    VParam.paramsFromMethod(method, system),
                     system.makePermission(category.permission, annotation.permission()),
                     system)
             );
@@ -107,11 +106,33 @@ public record VCommands(@NotNull String name, @NotNull Command command, @NotNull
      * @param options the children (options) to sort & filter
      * @param input the input string to match against
      * @param user the user to check for permissions
-     * @return a sorted list consisting of a subset of the children
+     * @return a sorted list consisting of a subset of the children or {@code null} if none matched even slightly or had permission
      */
-    public static @NotNull List<VCommandable> sortAndFilterChildren(@NotNull List<VCommandable> options, @NotNull String input, @NotNull User user) {
+    public static @Nullable List<VCommandable> sortAndFilterChildren(@NotNull List<VCommandable> options, @NotNull String input, @NotNull User user, double threshold) {
         // TODO: Cache #match
-        return options.stream().sorted(Comparator.comparingInt(o -> o.match(input, user))).filter(o -> o.match(input, user) != 0).toList();
+
+        // Get scores & max
+        List<Integer> values = new ArrayList<>();
+        int max = 0;
+        for (VCommandable option : options) {
+            int score = option.match(input, user);
+            max = Math.max(max, score);
+            values.add(score);
+        }
+
+        // Return null if none scored higher than nothing
+        if (max < threshold) {
+            return null;
+        }
+
+        // Retrieve results from options based on max scores
+        List<VCommandable> result = new ArrayList<>();
+        for (int i = 0; i < values.size(); i++) {
+            if (values.get(i) == max) {
+                result.add(options.get(i));
+            }
+        }
+        return result;
     }
 
     @Override
@@ -127,13 +148,15 @@ public record VCommands(@NotNull String name, @NotNull Command command, @NotNull
     @Override
     public void run(@NotNull List<String> input, @NotNull User user) {
 
+        // Send help when this is the final node
         if (input.isEmpty()) {
             // TODO: Send help
             user.send(new StringMessage(name() + ": Need more input to reach command"));
             return;
         }
 
-        for (VCommandable root : sortAndFilterChildren(children, input.get(0), user)) {
+        // Send command further downstream
+        for (VCommandable root : sortAndFilterChildren(children, input.get(0), user, system.settings().matchThreshold)) {
             root.run(input.subList(1, input.size()), user);
         }
     }
