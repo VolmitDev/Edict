@@ -54,33 +54,33 @@ public interface VCommandable {
     @NotNull Edict system();
 
     /**
-     * Whether the commandable matches a certain input string.
-     * @param input the input string
-     * @return true if the commandable matches the input string, false if not
+     * Run this commandable. It is assumed that this is in fact the right commandable, and that the user has permission.
+     * @param input the remaining input string to parse with
+     * @param user the user that ran the command
      */
-    default boolean matches(@NotNull String input) {
-        // TODO: Implement logic. Maybe this processing part should be done in the parent considering the nature of the problem; finding the best match.
-        // TODO: The alternative is strict matching.
-        // TODO: Perhaps make this return a [0, 1] double to indicate the degree to which it matches.
-        return true;
-    };
-
     default void run(@NotNull List<String> input, @NotNull User user) {
+        
+    }
 
-        // Empty input list
-        if (input.isEmpty()) {
-            user.send(new StringMessage(name() + ": Cannot run empty command"));
-            return;
-        }
-
-        // Match
-        if (!matches(input.get(0))) {
-            user.send(new StringMessage(name() + ": Input string " + input.get(0) + " does not match names or aliases " + String.join(", ", allNames())));
-        }
+    /**
+     * The degree to which this commandable matches a certain input.
+     * @param input the input string
+     * @param user the user to match against (for permission checking)
+     * @return a [0, 100] interval integer indicating the degree to which this matches the input as a percentage.
+     */
+    default int match(@NotNull String input, @NotNull User user) {
 
         // Permission
         if (!user.hasPermission(permission())) {
-            user.send(new StringMessage(name() + ": You do not have permission to run this category or command."));
+            system().d(new StringMessage(name() + ": Failed user permission check against " + permission()));
+            return 0;
+        }
+
+        // TODO: Implement this properly
+        if (allNames().contains(input)) {
+            return 100;
+        } else {
+            return 0;
         }
     }
 }

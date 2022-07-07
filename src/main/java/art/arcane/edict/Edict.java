@@ -16,8 +16,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 /**
  * The main System.
@@ -150,8 +153,7 @@ public class Edict {
         List<String> splitInput = List.of(command.split(" "));
 
         // Loop over roots
-        List<VCommandable> commandsInOrder = new ArrayList(rootCommands).sort();
-        for (VCommands root : rootCommands) {
+        for (VCommandable root : rootCommands.stream().sorted(Comparator.comparingInt(o -> o.match(splitInput.get(0), user))).toList()) {
             root.run(splitInput, user);
         }
     }
