@@ -1,5 +1,8 @@
 package art.arcane.edict;
 
+import art.arcane.edict.command.Command;
+import art.arcane.edict.command.Param;
+import art.arcane.edict.message.StringMessage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -10,9 +13,10 @@ import java.util.Arrays;
 
 /**
  * Settings class.
- * TODO: Turn this into a commandable object
+ * TODO: Hot-load changes
  */
-public class EDictionary {
+@Command(name = "edictSettings", description = "Settings for the Edict command system this is using. Changes are hot-loaded", permission = "edict")
+public class EDictionary implements Edicted {
 
         /**
          * Default config file location.
@@ -24,10 +28,20 @@ public class EDictionary {
      */
     public double matchThreshold = 0.6;
 
+    @Command(description = "Set the matching threshold")
+    public void setMatchThreshold(@Param(description = "The threshold") Double matchThreshold) {
+        update("Set matchThreshold to: " + matchThreshold);
+        this.matchThreshold = matchThreshold;
+    }
 
-
-
-
+    /**
+     * Send an update to the user and system.
+     * @param message the update message
+     */
+    private void update(String message) {
+        user().send(new StringMessage(message));
+        system().i(new StringMessage(user().name() + ": " + message));
+    }
 
 
 
