@@ -16,12 +16,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * The main System.
@@ -150,7 +146,11 @@ public class Edict {
      */
     public void command(String command, User user) {
 
-        List<String> input = cleanAndSplitCommand(command);
+        command = cleanCommand(command);
+
+        i(new StringMessage(user.name() + " sent command: " + command));
+
+        List<String> input = List.of(command.split(" "));
 
         // Blank check
         if (input.isEmpty()) {
@@ -168,20 +168,19 @@ public class Edict {
     }
 
     /**
-     * Clean the input command and split based on spaces.
+     * Clean the input command.
      * Performs the following actions:<br>
      *  - Remove all double spaces<br>
      *  - Remove spaces before equal signs
      * @param command the input command
-     * @return the cleaned command list
+     * @return the cleaned command
      */
-    public List<String> cleanAndSplitCommand(String command) {
+    public String cleanCommand(String command) {
         command = command.strip();
         while (command.contains("  ")) {
             command = command.replace("  ", " ");
         }
-        command = command.replace(" =", "=");
-        return List.of(command.split(" "));
+        return command.replace(" =", "=");
     }
 
     /**
