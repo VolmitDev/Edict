@@ -107,8 +107,6 @@ public interface ParameterHandler<T> {
             }
         }
 
-        // TODO: Priority sorting & filtering based on partial input
-
         return matches;
     }
 

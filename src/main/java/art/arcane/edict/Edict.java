@@ -177,7 +177,7 @@ public class Edict {
      */
     public void command(@NotNull String command, @NotNull User user) {
 
-        // TODO: Threading
+        // TODO: Threading. Atomic settings. Atomic static variables. Pain.
 
         command = cleanCommand(command);
 
@@ -195,8 +195,6 @@ public class Edict {
         d(new StringMessage("Running command: " + command));
 
         // Loop over roots
-        // TODO: Threading here too?
-        // TODO: Make sure the context is set right!
         new UserContext().post(user);
         new SystemContext().post(this);
         for (VCommandable root : VClass.sortAndFilterChildren(rootCommands, input.get(0), user, settings().matchThreshold)) {
