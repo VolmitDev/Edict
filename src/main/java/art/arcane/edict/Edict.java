@@ -2,7 +2,7 @@ package art.arcane.edict;
 
 import art.arcane.edict.handlers.ContextHandler;
 import art.arcane.edict.handlers.ContextHandlerRegistry;
-import art.arcane.edict.handlers.HandlerRegistry;
+import art.arcane.edict.handlers.ParameterHandlerRegistry;
 import art.arcane.edict.handlers.ParameterHandler;
 import art.arcane.edict.handlers.handlers.*;
 import art.arcane.edict.message.Message;
@@ -71,7 +71,7 @@ public class Edict {
     /**
      * Handler registry.
      */
-    private final HandlerRegistry handlerRegistry;
+    private final ParameterHandlerRegistry parameterHandlerRegistry;
 
     /**
      * Context handler registry.
@@ -117,11 +117,11 @@ public class Edict {
         this.systemUser = systemUser == null ? defaultSystemUser : systemUser;
 
         // Handlers
-        this.handlerRegistry = new HandlerRegistry(defaultHandlers);
+        this.parameterHandlerRegistry = new ParameterHandlerRegistry(defaultHandlers);
         if (handlers != null) {
             for (ParameterHandler<?> handler : handlers) {
                 if (handler != null) {
-                    handlerRegistry.register(handler);
+                    parameterHandlerRegistry.register(handler);
                     d(new StringMessage("Registered handler: " + handler.getClass().getSimpleName()));
                 }
             }

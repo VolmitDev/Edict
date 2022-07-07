@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Registry for type handlers.
  */
-public class HandlerRegistry {
+public class ParameterHandlerRegistry {
 
      /**
       * The list of handlers registered
@@ -18,7 +18,7 @@ public class HandlerRegistry {
       * Create a new handler registry.
       * @param handlers the handlers to register with
       */
-     public HandlerRegistry(ParameterHandler<?>... handlers) {
+     public ParameterHandlerRegistry(ParameterHandler<?>... handlers) {
           this.handlers.addAll(Arrays.asList(handlers));
      }
 
