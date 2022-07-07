@@ -6,7 +6,7 @@ import art.arcane.edict.message.Message;
 /**
  * System user implementation. By default, sends to System.out.
  */
-public class SystemUser extends StringUser {
+public class SystemUser implements User {
 
     @Override
     public boolean canUseContext() {
