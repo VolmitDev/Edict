@@ -8,7 +8,9 @@ import art.arcane.edict.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,12 +23,11 @@ import java.util.MissingResourceException;
  * I.e. like a branch in a tree data-structure.
  * @param name the name of the command node
  * @param command the command annotation
- * @param parent parent branches ({@code null} if this is the root)
  * @param children further node(s)
  * @param permission permission node for this category
  * @param system the command system
  */
-public record VCommands(@NotNull String name, @NotNull Command command, @NotNull Object instance, @Nullable VCommands parent, @NotNull List<VCommandable> children, @NotNull Permission permission, @NotNull Edict system) implements VCommandable {
+public record VCommands(@NotNull String name, @NotNull Command command, @NotNull Object instance, @NotNull List<VCommandable> children, @NotNull Permission permission, @NotNull Edict system) implements VCommandable {
 
     /**
      * Create a new category class.
@@ -39,14 +40,14 @@ public record VCommands(@NotNull String name, @NotNull Command command, @NotNull
      * @return a new category, or {@code null} if there are no commands in this category
      * @throws MissingResourceException if there is no @Command annotation on this class despite it being called as such
      */
-    public static @Nullable VCommands fromClass(@NotNull Object instance, @Nullable VCommands parent, @NotNull Edict system) throws MissingResourceException {
+    public static @Nullable VCommands fromInstance(@NotNull Object instance, @Nullable VCommands parent, @NotNull Edict system) throws MissingResourceException {
 
         // Class
         Class<?> clazz = instance.getClass();
 
         // Check for annotation
         if (!clazz.isAnnotationPresent(Command.class)) {
-            throw new MissingResourceException("@Command annotation not present on class", clazz.getSimpleName(), "@Command");
+            throw new MissingResourceException("@Command annotation not present on class " + clazz.getSimpleName(), clazz.getSimpleName(), "@Command");
         }
 
         // Construct edict
@@ -55,7 +56,6 @@ public record VCommands(@NotNull String name, @NotNull Command command, @NotNull
                 annotation.name().isBlank() ? clazz.getSimpleName() : annotation.name(),
                 annotation,
                 instance,
-                parent,
                 new ArrayList<>(),
                 system.makePermission(parent == null ? null : parent.permission, annotation.permission()),
                 system
@@ -82,11 +82,42 @@ public record VCommands(@NotNull String name, @NotNull Command command, @NotNull
         for (Field field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
 
+            // Annotation check
             if (!field.getType().isAnnotationPresent(Command.class)) {
                 system.d(new StringMessage(clazz.getSimpleName() + "#" + field.getName() + " not registered because not annotated by @Command"));
                 continue;
             }
-            VCommands subcategory = VCommands.fromClass(field.getType(), category, system);
+
+            // Construct instance
+            Object fInstance = null;
+            field.setAccessible(true);
+            try {
+                if (field.get(instance) != null) {
+                    fInstance = field.get(instance);
+                } else {
+                    for (Constructor<?> constructor : field.getType().getConstructors()) {
+                        if (constructor.getParameterCount() == 0) {
+                            constructor.setAccessible(true);
+                            try {
+                                fInstance = constructor.newInstance();
+                            } catch (InstantiationException | InvocationTargetException e) {
+                                system.w(new StringMessage("Tried constructing class for field " + field.getName() + " but could not due to " + e));
+                            }
+                        }
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                system.w(new StringMessage("Tried getting field " + field.getName() + " but could not get access due to " + e));
+            }
+
+            // Failed
+            if (fInstance == null) {
+                system.w(new StringMessage("Field " + field.getName() + " is of a type annotated by @Command but cannot be instantiated!"));
+                continue;
+            }
+
+            // Success
+            VCommands subcategory = VCommands.fromInstance(fInstance, category, system);
             if (subcategory != null) {
                 category.children.add(subcategory);
             }
@@ -108,8 +139,8 @@ public record VCommands(@NotNull String name, @NotNull Command command, @NotNull
      * @param user the user to check for permissions
      * @return a sorted list consisting of a subset of the children or {@code null} if none matched even slightly or had permission
      */
-    public static @Nullable List<VCommandable> sortAndFilterChildren(@NotNull List<VCommandable> options, @NotNull String input, @NotNull User user, double threshold) {
-        // TODO: Cache #match
+    public static @NotNull List<VCommandable> sortAndFilterChildren(@NotNull List<VCommandable> options, @NotNull String input, @NotNull User user, double threshold) {
+        // TODO: Cache?
 
         // Get scores & max
         List<Integer> values = new ArrayList<>();
@@ -120,13 +151,14 @@ public record VCommands(@NotNull String name, @NotNull Command command, @NotNull
             values.add(score);
         }
 
-        // Return null if none scored higher than nothing
+        List<VCommandable> result = new ArrayList<>();
+
+        // Return null if none scored higher than the threshold
         if (max < threshold) {
-            return null;
+            return result;
         }
 
         // Retrieve results from options based on max scores
-        List<VCommandable> result = new ArrayList<>();
         for (int i = 0; i < values.size(); i++) {
             if (values.get(i) == max) {
                 result.add(options.get(i));
@@ -146,18 +178,22 @@ public record VCommands(@NotNull String name, @NotNull Command command, @NotNull
     }
 
     @Override
-    public void run(@NotNull List<String> input, @NotNull User user) {
+    public boolean run(@NotNull List<String> input, @NotNull User user) {
 
         // Send help when this is the final node
         if (input.isEmpty()) {
             // TODO: Send help
             user.send(new StringMessage(name() + ": Need more input to reach command"));
-            return;
+            return false;
         }
 
         // Send command further downstream
         for (VCommandable root : sortAndFilterChildren(children, input.get(0), user, system.settings().matchThreshold)) {
-            root.run(input.subList(1, input.size()), user);
+            if (root.run(input.subList(1, input.size()), user)) {
+                return true;
+            }
         }
+
+        return false;
     }
 }

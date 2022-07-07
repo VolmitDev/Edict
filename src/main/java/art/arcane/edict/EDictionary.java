@@ -14,10 +14,10 @@ import java.util.Arrays;
  */
 public class EDictionary {
 
-    /**
-     * Default config file location.
-     */
-    private static final File defaultConfigFile = new File("edict/config.json");
+        /**
+         * Default config file location.
+         */
+    public static final File defaultConfigFile = new File("edict/config.json");
 
     /**
      * Threshold required to match an input string successfully with a command.
@@ -62,10 +62,12 @@ public class EDictionary {
      * Set up the settings system.
      * @param edict the initial settings
      * @param file the configuration file
+     * @throws IOException see {@link #saveToFile()}
      */
-    public static void setup(EDictionary edict, File file) {
+    public static void setup(EDictionary edict, File file) throws IOException {
         settings = edict;
         configFile = file;
+        saveToFile();
     }
 
     /**
@@ -76,7 +78,11 @@ public class EDictionary {
 
         // Setup failed
         if (settings == null) {
-            setup(new EDictionary(), defaultConfigFile);
+            try {
+                setup(new EDictionary(), defaultConfigFile);
+            } catch (IOException ignored) {
+                settings = new EDictionary();
+            }
         }
 
         try {

@@ -50,8 +50,9 @@ public interface VCommandable {
      * Run this commandable. It is assumed that this is in fact the right commandable, and that the user has permission.
      * @param input the remaining input string to parse with
      * @param user the user that ran the command
+     * @return
      */
-    void run(@NotNull List<String> input, @NotNull User user);
+    boolean run(@NotNull List<String> input, @NotNull User user);
 
     /**
      * The degree to which this commandable matches a certain input. Checks for permission.

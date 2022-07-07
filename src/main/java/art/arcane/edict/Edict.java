@@ -15,6 +15,8 @@ import art.arcane.edict.virtual.VCommands;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -84,21 +86,17 @@ public class Edict {
     private final SystemUser systemUser;
 
     /**
-     * Settings.
-     */
-    private EDictionary settings;
-
-    /**
      * Create a new command system.<br>
      * Uses default values:<br>
      *  - PermissionFactory: {@link #defaultPermissionFactory}<br>
      *  - EDictionary: settings, uses defaults of that class (by {@link EDictionary})<br>
+     *  - ConfigFile: {@link EDictionary#defaultConfigFile}<br>
      *  - SystemUser: {@link SystemUser} (Using System.out.)<br>
      *  - ParameterHandlers: {@link #defaultHandlers}<br>
      *  - ContextHandlers: {@code None}
      */
     public Edict(@NotNull Object... commandRoots) {
-        this(List.of(commandRoots), defaultPermissionFactory, new EDictionary(), defaultSystemUser, defaultHandlers, new ContextHandler<?>[]{});
+        this(List.of(commandRoots), defaultPermissionFactory, new EDictionary(), EDictionary.defaultConfigFile, defaultSystemUser, defaultHandlers, new ContextHandler<?>[]{});
     }
 
     /**
@@ -110,17 +108,27 @@ public class Edict {
      * @param parameterHandlers the handlers you wish to register.
      * @param contextHandlers the context handlers you wish to register.
      */
-    public Edict(@NotNull List<Object> commandRoots, @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @NotNull EDictionary settings, @NotNull SystemUser systemUser, @NotNull ParameterHandler<?>[] parameterHandlers, @NotNull ContextHandler<?>[] contextHandlers) {
+    public Edict(@NotNull List<Object> commandRoots, @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @NotNull EDictionary settings, @NotNull File configFile, @NotNull SystemUser systemUser, @NotNull ParameterHandler<?>[] parameterHandlers, @NotNull ContextHandler<?>[] contextHandlers) {
 
         // Settings
-        this.settings =
+        try {
+            EDictionary.setup(settings, configFile);
+        } catch (IOException e) {
+            w(new StringMessage("Could not setup settings due to IOException on custom config file location " + configFile + " because of " + e));
+            try {
+                EDictionary.setup(settings, EDictionary.defaultConfigFile);
+            } catch (IOException ee) {
+                w(new StringMessage("Could not setup settings due to IOException on default config file location " + EDictionary.defaultConfigFile + " because of " + e));
+                w(new StringMessage("Will be using only in-system settings (these are reset when the program reboots)"));
+            }
+        }
 
         // Permission factory
         this.permissionFactory = permissionFactory;
 
         // Command Roots
         for (Object root : commandRoots) {
-            VCommands vRoot = VCommands.fromClass(root.getClass(), null, this);
+            VCommands vRoot = VCommands.fromInstance(root, null, this);
             if (vRoot == null) {
                 w(new StringMessage("Could not register root " + root.getClass().getSimpleName() + "!"));
                 continue;
@@ -174,8 +182,13 @@ public class Edict {
 
         // Loop over roots
         for (VCommandable root : VCommands.sortAndFilterChildren(rootCommands, input.get(0), user, settings().matchThreshold)) {
-            root.run(input.subList(1, input.size()), user);
+            if (root.run(input.subList(1, input.size()), user)) {
+                return;
+            }
         }
+
+        d(new StringMessage("Could not find suitable command for input: " + command));
+        user.send(new StringMessage("Failed to run any commands for your input. Please try (one of): " + String.join(", ", rootCommands.stream().map(VCommandable::name).toList())));
     }
 
     /**

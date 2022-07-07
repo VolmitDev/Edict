@@ -1,23 +1,17 @@
 package art.arcane.edict.virtual;
 
 import art.arcane.edict.Edict;
-import art.arcane.edict.message.Message;
-import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.testconstruct.TestCommandClass;
 import art.arcane.edict.testconstruct.TestUser;
-import art.arcane.edict.user.User;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class VCommandsTest {
 
-    VCommands SUT = VCommands.fromClass(TestCommandClass.class, null, new Edict());
+    VCommands SUT = VCommands.fromInstance(TestCommandClass.class, null, new Edict());
 
     @Test
     void fromClass() {
@@ -32,8 +26,8 @@ class VCommandsTest {
 
     @Test
     void sortAndFilterChildren() {
-        List<String> commandableBracket = VCommands.sortAndFilterChildren(SUT.children(), "[", new TestUser()).stream().map(VCommandable::name).toList();
-        List<String> commandableMatch = VCommands.sortAndFilterChildren(SUT.children(), "command", new TestUser()).stream().map(VCommandable::name).toList();
+        List<String> commandableBracket = VCommands.sortAndFilterChildren(SUT.children(), "[", new TestUser(), SUT.system().settings().matchThreshold).stream().map(VCommandable::name).toList();
+        List<String> commandableMatch = VCommands.sortAndFilterChildren(SUT.children(), "command", new TestUser(), SUT.system().settings().matchThreshold).stream().map(VCommandable::name).toList();
         assertTrue(commandableBracket.isEmpty());
         assertEquals("command", commandableMatch.get(0));
         assertEquals(1, commandableMatch.size());

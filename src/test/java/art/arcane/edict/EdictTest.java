@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EdictTest {
 
-    Edict SUT = new Edict(TestCommandClass.class);
+    Edict SUT = new Edict(new TestCommandClass());
     TestUser TESTUSER = new TestUser();
 
     @Test
