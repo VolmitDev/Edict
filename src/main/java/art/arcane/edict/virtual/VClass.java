@@ -27,7 +27,7 @@ import java.util.MissingResourceException;
  * @param permission permission node for this category
  * @param system the command system
  */
-public record VCommands(@NotNull String name, @NotNull Command command, @NotNull Object instance, @NotNull List<VCommandable> children, @NotNull Permission permission, @NotNull Edict system) implements VCommandable {
+public record VClass(@NotNull String name, @NotNull Command command, @NotNull Object instance, @NotNull List<VCommandable> children, @NotNull Permission permission, @NotNull Edict system) implements VCommandable {
 
     /**
      * Create a new category class.
@@ -35,12 +35,12 @@ public record VCommands(@NotNull String name, @NotNull Command command, @NotNull
      * Note, there is NO check for circular references, so make sure to prevent this yourself.
      * TODO: Fix that
      * @param instance the class to create the edict from
-     * @param parent the parent {@link VCommands} ({@code null} if clazz is the root)
+     * @param parent the parent {@link VClass} ({@code null} if clazz is the root)
      * @param system the system
      * @return a new category, or {@code null} if there are no commands in this category
      * @throws MissingResourceException if there is no @Command annotation on this class despite it being called as such
      */
-    public static @Nullable VCommands fromInstance(@NotNull Object instance, @Nullable VCommands parent, @NotNull Edict system) throws MissingResourceException {
+    public static @Nullable VClass fromInstance(@NotNull Object instance, @Nullable VClass parent, @NotNull Edict system) throws MissingResourceException {
 
         // Class
         Class<?> clazz = instance.getClass();
@@ -52,7 +52,7 @@ public record VCommands(@NotNull String name, @NotNull Command command, @NotNull
 
         // Construct edict
         Command annotation = clazz.getDeclaredAnnotation(Command.class);
-        VCommands category = new VCommands(
+        VClass category = new VClass(
                 annotation.name().isBlank() ? clazz.getSimpleName() : annotation.name(),
                 annotation,
                 instance,
@@ -68,7 +68,7 @@ public record VCommands(@NotNull String name, @NotNull Command command, @NotNull
                 continue;
             }
             annotation = method.getDeclaredAnnotation(Command.class);
-            category.children.add(new VCommand(
+            category.children.add(new VMethod(
                     annotation,
                     category,
                     method,
@@ -117,7 +117,7 @@ public record VCommands(@NotNull String name, @NotNull Command command, @NotNull
             }
 
             // Success
-            VCommands subcategory = VCommands.fromInstance(fInstance, category, system);
+            VClass subcategory = VClass.fromInstance(fInstance, category, system);
             if (subcategory != null) {
                 category.children.add(subcategory);
             }

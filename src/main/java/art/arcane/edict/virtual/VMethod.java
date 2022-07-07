@@ -7,6 +7,7 @@ import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -20,7 +21,7 @@ import java.util.*;
  * @param params the parameters of this method {@link VParam}s
  * @param system the command system
  */
-public record VCommand(@NotNull Command command, @NotNull VCommands parent, @NotNull Method method, @NotNull List<VParam> params, @NotNull Permission permission, @NotNull Edict system) implements VCommandable {
+public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull Method method, @NotNull List<VParam> params, @NotNull Permission permission, @NotNull Edict system) implements VCommandable {
 
     @Override
     public @NotNull String name() {
@@ -39,8 +40,13 @@ public record VCommand(@NotNull Command command, @NotNull VCommands parent, @Not
             user.send(new StringMessage("Send more parameters bitch"));
             return false;
         }
-
         user.send(new StringMessage("Running command " + name() + " with input: " + String.join(", ", input)));
+        try {
+            // TODO: Proper implementation
+            method.invoke(parent.instance());
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            // TODO: Handle
+        }
         return true;
     }
 }

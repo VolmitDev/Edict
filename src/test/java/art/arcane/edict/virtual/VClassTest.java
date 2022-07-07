@@ -9,9 +9,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class VCommandsTest {
+class VClassTest {
 
-    VCommands SUT = VCommands.fromInstance(TestCommandClass.class, null, new Edict());
+    VClass SUT = VClass.fromInstance(new TestCommandClass(), null, new Edict());
 
     @Test
     void fromClass() {
@@ -26,8 +26,8 @@ class VCommandsTest {
 
     @Test
     void sortAndFilterChildren() {
-        List<String> commandableBracket = VCommands.sortAndFilterChildren(SUT.children(), "[", new TestUser(), SUT.system().settings().matchThreshold).stream().map(VCommandable::name).toList();
-        List<String> commandableMatch = VCommands.sortAndFilterChildren(SUT.children(), "command", new TestUser(), SUT.system().settings().matchThreshold).stream().map(VCommandable::name).toList();
+        List<String> commandableBracket = VClass.sortAndFilterChildren(SUT.children(), "[", new TestUser(), SUT.system().settings().matchThreshold).stream().map(VCommandable::name).toList();
+        List<String> commandableMatch = VClass.sortAndFilterChildren(SUT.children(), "command", new TestUser(), SUT.system().settings().matchThreshold).stream().map(VCommandable::name).toList();
         assertTrue(commandableBracket.isEmpty());
         assertEquals("command", commandableMatch.get(0));
         assertEquals(1, commandableMatch.size());

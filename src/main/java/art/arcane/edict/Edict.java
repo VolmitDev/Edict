@@ -1,5 +1,7 @@
 package art.arcane.edict;
 
+import art.arcane.edict.context.SystemContext;
+import art.arcane.edict.context.UserContext;
 import art.arcane.edict.handlers.ContextHandler;
 import art.arcane.edict.handlers.ContextHandlerRegistry;
 import art.arcane.edict.handlers.ParameterHandlerRegistry;
@@ -11,7 +13,7 @@ import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.SystemUser;
 import art.arcane.edict.user.User;
 import art.arcane.edict.virtual.VCommandable;
-import art.arcane.edict.virtual.VCommands;
+import art.arcane.edict.virtual.VClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -110,6 +112,12 @@ public class Edict {
      */
     public Edict(@NotNull List<Object> commandRoots, @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @NotNull EDictionary settings, @NotNull File configFile, @NotNull SystemUser systemUser, @NotNull ParameterHandler<?>[] parameterHandlers, @NotNull ContextHandler<?>[] contextHandlers) {
 
+        // System
+        this.systemUser = systemUser;
+
+        // Permission factory
+        this.permissionFactory = permissionFactory;
+
         // Settings
         try {
             EDictionary.setup(settings, configFile);
@@ -123,21 +131,15 @@ public class Edict {
             }
         }
 
-        // Permission factory
-        this.permissionFactory = permissionFactory;
-
         // Command Roots
         for (Object root : commandRoots) {
-            VCommands vRoot = VCommands.fromInstance(root, null, this);
+            VClass vRoot = VClass.fromInstance(root, null, this);
             if (vRoot == null) {
                 w(new StringMessage("Could not register root " + root.getClass().getSimpleName() + "!"));
                 continue;
             }
             rootCommands.add(vRoot);
         }
-
-        // System
-        this.systemUser = systemUser;
 
         // Handlers
         this.parameterHandlerRegistry = new ParameterHandlerRegistry(defaultHandlers);
@@ -165,6 +167,8 @@ public class Edict {
      */
     public void command(@NotNull String command, @NotNull User user) {
 
+        // TODO: Threading
+
         command = cleanCommand(command);
 
         i(new StringMessage(user.name() + " sent command: " + command));
@@ -181,7 +185,11 @@ public class Edict {
         d(new StringMessage("Running command: " + command));
 
         // Loop over roots
-        for (VCommandable root : VCommands.sortAndFilterChildren(rootCommands, input.get(0), user, settings().matchThreshold)) {
+        // TODO: Threading here too?
+        // TODO: Make sure the context is set right!
+        new UserContext().post(user);
+        new SystemContext().post(this);
+        for (VCommandable root : VClass.sortAndFilterChildren(rootCommands, input.get(0), user, settings().matchThreshold)) {
             if (root.run(input.subList(1, input.size()), user)) {
                 return;
             }
