@@ -144,7 +144,7 @@ public class Edict {
      * @param command the command to run
      * @param user the user that ran the command
      */
-    public void command(String command, User user) {
+    public void command(@NotNull String command, @NotNull User user) {
 
         command = cleanCommand(command);
 
@@ -175,7 +175,7 @@ public class Edict {
      * @param command the input command
      * @return the cleaned command
      */
-    public String cleanCommand(String command) {
+    public @NotNull String cleanCommand(@NotNull String command) {
         command = command.strip();
         while (command.contains("  ")) {
             command = command.replace("  ", " ");
