@@ -84,24 +84,39 @@ public class Edict {
     private final SystemUser systemUser;
 
     /**
-     * Create a new command system.
+     * Settings.
+     */
+    private EDictionary settings;
+
+    /**
+     * Create a new command system.<br>
+     * Uses default values:<br>
+     *  - PermissionFactory: {@link #defaultPermissionFactory}<br>
+     *  - EDictionary: settings, uses defaults of that class (by {@link EDictionary})<br>
+     *  - SystemUser: {@link SystemUser} (Using System.out.)<br>
+     *  - ParameterHandlers: {@link #defaultHandlers}<br>
+     *  - ContextHandlers: {@code None}
      */
     public Edict(@NotNull Object... commandRoots) {
-        this(List.of(commandRoots), null, null, null, null);
+        this(List.of(commandRoots), defaultPermissionFactory, new EDictionary(), defaultSystemUser, defaultHandlers, new ContextHandler<?>[]{});
     }
 
     /**
      * Create a new command system.
      * @param commandRoots the roots of the commands.
-     * @param permissionFactory factory to create permissions. By default {@link #defaultPermissionFactory} is used.
-     * @param systemUser the user to output system messages to. By default, uses {@link SystemUser} (Using System.out.)
-     * @param handlers the handlers you wish to register. By default, {@link #defaultHandlers} are already registered.
-     * @param contextHandlers the context handlers you wish to register. By default, there are no context handlers.
+     * @param permissionFactory factory to create permissions.
+     * @param settings settings.
+     * @param systemUser the user to output system messages to.
+     * @param parameterHandlers the handlers you wish to register.
+     * @param contextHandlers the context handlers you wish to register.
      */
-    public Edict(@NotNull List<Object> commandRoots, @Nullable BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @Nullable SystemUser systemUser, @Nullable ParameterHandler<?>[] handlers, @Nullable ContextHandler<?>[] contextHandlers) {
+    public Edict(@NotNull List<Object> commandRoots, @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @NotNull EDictionary settings, @NotNull SystemUser systemUser, @NotNull ParameterHandler<?>[] parameterHandlers, @NotNull ContextHandler<?>[] contextHandlers) {
+
+        // Settings
+        this.settings =
 
         // Permission factory
-        this.permissionFactory = permissionFactory == null ? defaultPermissionFactory : permissionFactory;
+        this.permissionFactory = permissionFactory;
 
         // Command Roots
         for (Object root : commandRoots) {
@@ -114,16 +129,14 @@ public class Edict {
         }
 
         // System
-        this.systemUser = systemUser == null ? defaultSystemUser : systemUser;
+        this.systemUser = systemUser;
 
         // Handlers
         this.parameterHandlerRegistry = new ParameterHandlerRegistry(defaultHandlers);
-        if (handlers != null) {
-            for (ParameterHandler<?> handler : handlers) {
-                if (handler != null) {
-                    parameterHandlerRegistry.register(handler);
-                    d(new StringMessage("Registered handler: " + handler.getClass().getSimpleName()));
-                }
+        if (parameterHandlers != null) {
+            for (ParameterHandler<?> handler : parameterHandlers) {
+                parameterHandlerRegistry.register(handler);
+                d(new StringMessage("Registered handler: " + handler.getClass().getSimpleName()));
             }
         }
 
@@ -131,10 +144,8 @@ public class Edict {
         this.contextHandlerRegistry = new ContextHandlerRegistry();
         if (contextHandlers != null) {
             for (ContextHandler<?> contextHandler : contextHandlers) {
-                if (contextHandler != null) {
-                    contextHandlerRegistry.register(contextHandler);
-                    d(new StringMessage("Registered context handler: " + contextHandler.getClass().getSimpleName()));
-                }
+                contextHandlerRegistry.register(contextHandler);
+                d(new StringMessage("Registered context handler: " + contextHandler.getClass().getSimpleName()));
             }
         }
     }
@@ -162,7 +173,7 @@ public class Edict {
         d(new StringMessage("Running command: " + command));
 
         // Loop over roots
-        for (VCommandable root : VCommands.sortAndFilterChildren(rootCommands, input.get(0), user)) {
+        for (VCommandable root : VCommands.sortAndFilterChildren(rootCommands, input.get(0), user, settings().matchThreshold)) {
             root.run(input.subList(1, input.size()), user);
         }
     }
@@ -210,5 +221,13 @@ public class Edict {
      */
     public void d(Message message) {
         systemUser.d(message);
+    }
+
+    /**
+     * Get system settings.
+     * @return the system settings
+     */
+    public EDictionary settings() {
+        return EDictionary.get();
     }
 }
