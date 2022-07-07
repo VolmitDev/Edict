@@ -57,6 +57,11 @@ public class Edict {
     };
 
     /**
+     * Default system user.
+     */
+    private static final SystemUser defaultSystemUser = new SystemUser();
+
+    /**
      * Root commands
      */
     private final List<VCommandable> rootCommands = new ArrayList<>();
@@ -98,6 +103,9 @@ public class Edict {
      */
     public Edict(@NotNull List<Class<?>> commandRoots, @Nullable BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @Nullable SystemUser systemUser, @Nullable ParameterHandler<?>[] handlers, @Nullable ContextHandler<?>[] contextHandlers) {
 
+        // Permission factory
+        this.permissionFactory = permissionFactory == null ? defaultPermissionFactory : permissionFactory;
+
         // Command Roots
         for (Class<?> root : commandRoots) {
             VCommands vRoot = VCommands.fromClass(root, null, this);
@@ -108,11 +116,8 @@ public class Edict {
             rootCommands.add(vRoot);
         }
 
-        // Permission factory
-        this.permissionFactory = permissionFactory == null ? defaultPermissionFactory : permissionFactory;
-
         // System
-        this.systemUser = systemUser;
+        this.systemUser = systemUser == null ? defaultSystemUser : systemUser;
 
         // Handlers
         this.handlerRegistry = new HandlerRegistry(defaultHandlers);
@@ -144,18 +149,38 @@ public class Edict {
      */
     public void command(String command, User user) {
 
-        // Clean command
+        List<String> input = cleanAndSplitCommand(command);
+
+        // Blank check
+        if (input.isEmpty()) {
+            // TODO: Send help
+            user.send(new StringMessage("This is an empty command wtf do you want"));
+            return;
+        }
+
+        d(new StringMessage("Running command: " + command));
+
+        // Loop over roots
+        for (VCommandable root : VCommands.sortAndFilterChildren(rootCommands, input.get(0), user)) {
+            root.run(input.subList(1, input.size()), user);
+        }
+    }
+
+    /**
+     * Clean the input command and split based on spaces.
+     * Performs the following actions:<br>
+     *  - Remove all double spaces<br>
+     *  - Remove spaces before equal signs
+     * @param command the input command
+     * @return the cleaned command list
+     */
+    public List<String> cleanAndSplitCommand(String command) {
         command = command.strip();
         while (command.contains("  ")) {
             command = command.replace("  ", " ");
         }
         command = command.replace(" =", "=");
-        List<String> splitInput = List.of(command.split(" "));
-
-        // Loop over roots
-        for (VCommandable root : rootCommands.stream().sorted(Comparator.comparingInt(o -> o.match(splitInput.get(0), user))).toList()) {
-            root.run(splitInput, user);
-        }
+        return List.of(command.split(" "));
     }
 
     /**

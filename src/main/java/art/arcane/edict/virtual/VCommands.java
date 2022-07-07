@@ -4,12 +4,14 @@ import art.arcane.edict.Edict;
 import art.arcane.edict.command.Command;
 import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.permission.Permission;
+import art.arcane.edict.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.MissingResourceException;
 
@@ -95,6 +97,18 @@ public record VCommands(@NotNull String name, @NotNull Command command, @Nullabl
         return category;
     }
 
+    /**
+     * Sort and filter children nodes by some input and a user.
+     * @param options the children (options) to sort & filter
+     * @param input the input string to match against
+     * @param user the user to check for permissions
+     * @return a sorted list consisting of a subset of the children
+     */
+    public static @NotNull List<VCommandable> sortAndFilterChildren(@NotNull List<VCommandable> options, @NotNull String input, @NotNull User user) {
+        // TODO: Cache #match
+        return options.stream().sorted(Comparator.comparingInt(o -> o.match(input, user))).filter(o -> o.match(input, user) != 0).toList();
+    }
+
     @Override
     public @NotNull String name() {
         return name;
@@ -103,5 +117,19 @@ public record VCommands(@NotNull String name, @NotNull Command command, @Nullabl
     @Override
     public String[] aliases() {
         return command.aliases();
+    }
+
+    @Override
+    public void run(@NotNull List<String> input, @NotNull User user) {
+
+        if (input.isEmpty()) {
+            // TODO: Send help
+            user.send(new StringMessage(name() + ": Need more input to reach command"));
+            return;
+        }
+
+        for (VCommandable root : sortAndFilterChildren(children, input.get(0), user)) {
+            root.run(input.subList(1, input.size()), user);
+        }
     }
 }

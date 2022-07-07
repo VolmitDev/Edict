@@ -5,7 +5,6 @@ import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,12 +41,6 @@ public interface VCommandable {
     @NotNull Permission permission();
 
     /**
-     * The parent of the commandable.
-     * @return the parent of the commandable
-     */
-    @Nullable VCommands parent();
-
-    /**
      * The system of the commandable.
      * @return the system of the commandable
      */
@@ -58,12 +51,10 @@ public interface VCommandable {
      * @param input the remaining input string to parse with
      * @param user the user that ran the command
      */
-    default void run(@NotNull List<String> input, @NotNull User user) {
-        
-    }
+    void run(@NotNull List<String> input, @NotNull User user);
 
     /**
-     * The degree to which this commandable matches a certain input.
+     * The degree to which this commandable matches a certain input. Checks for permission.
      * @param input the input string
      * @param user the user to match against (for permission checking)
      * @return a [0, 100] interval integer indicating the degree to which this matches the input as a percentage.

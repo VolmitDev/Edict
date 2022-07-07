@@ -31,4 +31,14 @@ public record VCommand(@NotNull Command command, @NotNull VCommands parent, @Not
     public String[] aliases() {
         return command.aliases();
     }
+
+    @Override
+    public void run(@NotNull List<String> input, @NotNull User user) {
+        if (input.size() < params.size()) {
+            // TODO: Send help
+            user.send(new StringMessage("Send more parameters bitch"));
+            return;
+        }
+        user.send(new StringMessage("Running command " + name() + " with input: " + String.join(", ", input)));
+    }
 }

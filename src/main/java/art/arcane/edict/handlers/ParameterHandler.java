@@ -73,7 +73,7 @@ public interface ParameterHandler<T> {
      * @param input The inputted string to check against
      * @return A {@link List} of possibilities
      */
-    default List<T> getPossibilities(String input) {
+    default List<T> getPossibilities(@NotNull String input) {
         if (input.trim().isEmpty()) {
             return getPossibilities();
         }
@@ -107,7 +107,7 @@ public interface ParameterHandler<T> {
             }
         }
 
-        // TODO: Priority sorting based on partial input
+        // TODO: Priority sorting & filtering based on partial input
 
         return matches;
     }
