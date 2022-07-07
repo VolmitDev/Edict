@@ -18,9 +18,9 @@ import java.util.Arrays;
 @Command(name = "edictSettings", description = "Settings for the Edict command system this is using. Changes are hot-loaded", permission = "edict")
 public class EDictionary implements Edicted {
 
-        /**
-         * Default config file location.
-         */
+    /**
+     * Default config file location.
+     */
     public static final File defaultConfigFile = new File("edict/config.json");
 
     /**
@@ -30,20 +30,39 @@ public class EDictionary implements Edicted {
 
     @Command(description = "Set the matching threshold")
     public void setMatchThreshold(@Param(description = "The threshold") Double matchThreshold) {
-        update("Set matchThreshold to: " + matchThreshold);
+        update("setMatchThreshold", this.matchThreshold, matchThreshold);
         this.matchThreshold = matchThreshold;
     }
 
     /**
-     * Send an update to the user and system.
-     * @param message the update message
+     * Whether these settings can be changed as commands.
      */
-    private void update(String message) {
-        user().send(new StringMessage(message));
-        system().i(new StringMessage(user().name() + ": " + message));
+    public boolean settingsAsCommands = false;
+
+    @Command(description = "Set whether settings can be used as commands")
+    public void setSettingsAsCommands(Boolean settingsAsCommands) {
+        update("settingsAsCommands", this.settingsAsCommands, settingsAsCommands);
+        this.settingsAsCommands = settingsAsCommands;
     }
 
 
+
+
+
+
+
+    /// Util method
+
+    /**
+     * Send an update to the user and system.
+     * @param setting the name of the setting
+     * @param oldValue the old value of the setting
+     * @param newValue the new value of the setting
+     */
+    private void update(String setting, Object oldValue, Object newValue) {
+        user().send(new StringMessage("Set " + setting + " from " + oldValue + " to " + newValue));
+        system().i(new StringMessage(user().name() + " set " + setting + " from " + oldValue + " to " + newValue));
+    }
 
     /// Static settings to make this baby work :)
 

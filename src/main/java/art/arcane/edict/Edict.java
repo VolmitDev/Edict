@@ -131,6 +131,16 @@ public class Edict {
             }
         }
 
+        // System settings root
+        if (EDictionary.get().settingsAsCommands) {
+            VClass vRoot = VClass.fromInstance(EDictionary.get(), null, this);
+            if (vRoot == null) {
+                w(new StringMessage("Could not register settings commands!"));
+            } else {
+                rootCommands.add(vRoot);
+            }
+        }
+
         // Command Roots
         for (Object root : commandRoots) {
             VClass vRoot = VClass.fromInstance(root, null, this);
