@@ -32,10 +32,11 @@ class VCommandsTest {
 
     @Test
     void sortAndFilterChildren() {
-        List<String> commandableBracket = VCommands.sortAndFilterChildren(SUT.children(), "[", new TestUser()).stream().map(VCommandable::name).collect(Collectors.toList());
-        List<String> commandableMatch = VCommands.sortAndFilterChildren(SUT.children(), "command", new TestUser()).stream().map(VCommandable::name).collect(Collectors.toList());
+        List<String> commandableBracket = VCommands.sortAndFilterChildren(SUT.children(), "[", new TestUser()).stream().map(VCommandable::name).toList();
+        List<String> commandableMatch = VCommands.sortAndFilterChildren(SUT.children(), "command", new TestUser()).stream().map(VCommandable::name).toList();
         assertTrue(commandableBracket.isEmpty());
         assertEquals("command", commandableMatch.get(0));
+        assertEquals(1, commandableMatch.size());
     }
 
     @Test
@@ -50,20 +51,6 @@ class VCommandsTest {
 
     @Test
     void run() {
-        AtomicBoolean success = new AtomicBoolean(false);
-        SUT.run(Collections.singletonList("command"), new User() {
-            @Override
-            public boolean canUseContext() {
-                return false;
-            }
-
-            @Override
-            public void send(Message message) {
-                if (message.toString().equals("command ran")) {
-                    success.set(true);
-                }
-            }
-        });
-        assertTrue(success.get());
+        // Ran from EdictTest
     }
 }
