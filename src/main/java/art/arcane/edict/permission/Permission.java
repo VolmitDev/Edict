@@ -6,15 +6,14 @@ package art.arcane.edict.permission;
 public interface Permission {
 
     /**
-     * Some permission node.
-     * @return the permission node
-     */
-    String get();
-
-    /**
      * Parent permission node.
      * @return the parent permission node
      */
     Permission getParent();
 
+    /**
+     * To string
+     * @return String representation of the permission node
+     */
+    String toString();
 }
