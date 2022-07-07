@@ -7,14 +7,17 @@ import art.arcane.edict.handlers.ParameterHandler;
 import art.arcane.edict.handlers.handlers.*;
 import art.arcane.edict.message.Message;
 import art.arcane.edict.message.StringMessage;
+import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.SystemUser;
 import art.arcane.edict.user.User;
-import org.apache.commons.lang3.NotImplementedException;
+import art.arcane.edict.virtual.VCommandable;
+import art.arcane.edict.virtual.VCommands;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * The main System.
@@ -36,6 +39,31 @@ public class Edict {
     };
 
     /**
+     * Default permission factory.
+     */
+    private static final BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> defaultPermissionFactory = (parent, s) -> new Permission() {
+        @Override
+        public Permission getParent() {
+            return parent;
+        }
+
+        @Override
+        public String toString() {
+            return s;
+        }
+    };
+
+    /**
+     * Root commands
+     */
+    private final List<VCommandable> rootCommands = new ArrayList<>();
+
+    /**
+     * Permission factory
+     */
+    private final BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory;
+
+    /**
      * Handler registry.
      */
     private final HandlerRegistry handlerRegistry;
@@ -53,19 +81,32 @@ public class Edict {
     /**
      * Create a new command system.
      */
-    public Edict() {
-        this(new ArrayList<>(), null, null, null);
+    public Edict(@NotNull Class<?>... commandRoots) {
+        this(new ArrayList<>(List.of(commandRoots)), null, null, null, null);
     }
 
     /**
      * Create a new command system.
      * @param commandRoots the roots of the commands.
-     * TODO: You were here
+     * @param permissionFactory factory to create permissions. By default {@link #defaultPermissionFactory} is used.
      * @param systemUser the user to output system messages to. By default, uses {@link SystemUser} (Using System.out.)
      * @param handlers the handlers you wish to register. By default, {@link #defaultHandlers} are already registered.
      * @param contextHandlers the context handlers you wish to register. By default, there are no context handlers.
      */
-    public Edict(@NotNull List<Class<?>> commandRoots, @Nullable SystemUser systemUser, @Nullable ParameterHandler<?>[] handlers, @Nullable ContextHandler<?>[] contextHandlers) {
+    public Edict(@NotNull List<Class<?>> commandRoots, @Nullable BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @Nullable SystemUser systemUser, @Nullable ParameterHandler<?>[] handlers, @Nullable ContextHandler<?>[] contextHandlers) {
+
+        // Command Roots
+        for (Class<?> root : commandRoots) {
+            VCommands vRoot = VCommands.fromClass(root, null, this);
+            if (vRoot == null) {
+                w(new StringMessage("Could not register root " + root.getSimpleName() + "!"));
+                continue;
+            }
+            rootCommands.add(vRoot);
+        }
+
+        // Permission factory
+        this.permissionFactory = permissionFactory == null ? defaultPermissionFactory : permissionFactory;
 
         // System
         this.systemUser = systemUser;
@@ -99,7 +140,28 @@ public class Edict {
      * @param user the user that ran the command
      */
     public void command(String command, User user) {
-        throw new NotImplementedException();
+
+        // Clean command
+        command = command.strip();
+        while (command.contains("  ")) {
+            command = command.replace("  ", " ");
+        }
+        command = command.replace(" =", "=");
+        List<String> splitInput = List.of(command.split(" "));
+
+        // Loop over roots
+        List<VCommandable> commandsInOrder = new ArrayList(rootCommands).sort();
+        for (VCommands root : rootCommands) {
+            root.run(splitInput, user);
+        }
+    }
+
+    /**
+     * Make a {@link Permission} node.
+     * @param input the input to make the node
+     */
+    public @NotNull Permission makePermission(@Nullable Permission parent, @NotNull String input) {
+        return permissionFactory.apply(parent, input);
     }
 
     /**
