@@ -7,7 +7,6 @@ import art.arcane.edict.message.StringMessage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -41,9 +40,6 @@ public class EDictionary implements Edicted {
 
 
 
-
-    /// Util method
-
     /**
      * Send an update to the user and system.
      * @param setting the name of the setting
@@ -52,47 +48,20 @@ public class EDictionary implements Edicted {
      * @param runUpdate to update the setting (with locking)
      */
     private void update(@NotNull String setting, @NotNull Object oldValue, @NotNull Object newValue, @NotNull Runnable runUpdate) {
-        if (!LOCKS.containsKey(setting)) {
-            LOCKS_LOCK.lock();
-            if (!LOCKS.containsKey(setting)) {
-                LOCKS.put(setting, new ReentrantLock());
-            }
-            LOCKS_LOCK.unlock();
+        LOCK.lock();
+        if (settings == null) {
+            settings = new EDictionary();
         }
-        if (LOCKS.get(setting).isLocked()) {
-            user().send(new StringMessage("You tried setting " + setting + " from " + oldValue + " to " + newValue + " but another user is updating it at the same time! Try again."));
-        } else {
-            LOCKS.get(setting).lock();
-            user().send(new StringMessage("Set " + setting + " from " + oldValue + " to " + newValue));
-            system().i(new StringMessage(user().name() + " set " + setting + " from " + oldValue + " to " + newValue));
-            if (settings == null) {
-                SETTINGS_LOCK.lock();
-                if (settings == null) {
-                    settings = new EDictionary();
-                }
-                SETTINGS_LOCK.unlock();
-            }
-            runUpdate.run();
-            LOCKS.get(setting).unlock();
-        }
+        user().send(new StringMessage("Set " + setting + " from " + oldValue + " to " + newValue));
+        system().i(new StringMessage(user().name() + " set " + setting + " from " + oldValue + " to " + newValue));
+        runUpdate.run();
+        LOCK.unlock();
     }
-
-    /// Static settings to make this baby work :)
-
-    /**
-     * Setting update lock.
-     */
-    private static final ConcurrentHashMap<String, ReentrantLock> LOCKS = new ConcurrentHashMap<>();
-
-    /**
-     * LOCKS lock.
-     */
-    private static final ReentrantLock LOCKS_LOCK = new ReentrantLock();
 
     /**
      * Settings lock.
      */
-    private static final ReentrantLock SETTINGS_LOCK = new ReentrantLock();
+    private static final ReentrantLock LOCK = new ReentrantLock();
 
     /**
      * Singleton.
@@ -104,9 +73,9 @@ public class EDictionary implements Edicted {
      * @param settings settings that should be used. If {@code null} uses default settings.
      */
     public static void set(@Nullable EDictionary settings) {
-        SETTINGS_LOCK.lock();
+        LOCK.lock();
         EDictionary.settings = settings == null ? new EDictionary() : settings;
-        SETTINGS_LOCK.unlock();
+        LOCK.unlock();
     }
 
     /**
