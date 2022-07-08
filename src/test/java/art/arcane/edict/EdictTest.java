@@ -24,6 +24,7 @@ class EdictTest {
     void command() {
         try {
             SUT.command("test command", TESTUSER);
+            assertTrue(TESTUSER.received.size() > 0);
             assertEquals("command ran", TESTUSER.received.get(TESTUSER.received.size() - 1).message());
         } catch (Exception e) {
             fail(e);
