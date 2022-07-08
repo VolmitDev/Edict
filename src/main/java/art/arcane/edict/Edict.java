@@ -177,7 +177,17 @@ public class Edict {
      * @param user the user that ran the command
      */
     public void command(@NotNull String command, @NotNull User user) {
-        new Thread(() -> {
+        command(command, user, false);
+    }
+
+    /**
+     * Run a command through the system.
+     * @param command the command to run
+     * @param user the user that ran the command
+     * @param forceSync force the execution of this command in sync
+     */
+    public void command(@NotNull String command, @NotNull User user, boolean forceSync) {
+        Runnable r = () -> {
             final String fCommand = cleanCommand(command);
 
             i(new StringMessage(user.name() + " sent command: " + fCommand));
@@ -206,7 +216,14 @@ public class Edict {
             d(new StringMessage("Could not find suitable command for input: " + fCommand));
             user.send(new StringMessage("Failed to run any commands for your input. Please try (one of): " + String.join(", ", rootCommands.stream().map(VCommandable::name).toList())));
 
-        }).start();
+        };
+
+        if (forceSync) {
+            d(new StringMessage("Running command in forced sync. Likely for testing purposes."));
+            r.run();
+        } else {
+            new Thread(r).start();
+        }
     }
 
     /**
