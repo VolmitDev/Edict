@@ -26,6 +26,7 @@ import java.util.function.BiFunction;
 
 /**
  * The main System.
+ * TODO: Make colored text
  */
 public class Edict {
 
