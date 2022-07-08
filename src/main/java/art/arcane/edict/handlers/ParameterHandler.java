@@ -156,4 +156,37 @@ public interface ParameterHandler<T> {
         value.set(in);
         return multiplier;
     }
+
+    /**
+     * Get a random int from to (inclusive)
+     *
+     * @param from the lower bound
+     * @param to the upper bound (inclusive)
+     * @return the value
+     */
+    default int randomInt(int from, int to) {
+        return (int) randomFloat(from, to);
+    }
+
+    /**
+     * Get a random float from to (inclusive)
+     *
+     * @param from the lower bound
+     * @param to the upper bound
+     * @return the value
+     */
+    default float randomFloat(float from, float to) {
+        return from + (float) (Math.random() * ((to - from) + 1));
+    }
+
+    /**
+     * Get a random double from to (inclusive)
+     *
+     * @param f the lower bound
+     * @param t the upper bound
+     * @return the value
+     */
+    default double randomDouble(double f, double t) {
+        return f + (Math.random() * ((t - f) + 1));
+    }
 }
