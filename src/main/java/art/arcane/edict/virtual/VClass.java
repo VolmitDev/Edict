@@ -178,7 +178,8 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
         List<VCommandable> children = indexer.search(
                 input.get(0),
                 system.settings().matchThreshold,
-                vCommandable -> user.hasPermission(vCommandable.permission())
+                vCommandable -> user.hasPermission(vCommandable.permission()),
+                system
         );
 
         // Send command further downstream
@@ -189,5 +190,10 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
         }
 
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode() + command.hashCode() + instance.hashCode() + children.hashCode() + indexer.hashCode() + system.hashCode() + permission.hashCode();
     }
 }

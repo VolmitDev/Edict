@@ -54,4 +54,9 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
         }
         return false;
     }
+
+    @Override
+    public int hashCode() {
+        return command.hashCode() + method.hashCode() + params.hashCode() + permission.hashCode() + system.hashCode();
+    }
 }

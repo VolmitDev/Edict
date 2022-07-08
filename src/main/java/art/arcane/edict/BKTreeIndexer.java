@@ -6,11 +6,10 @@ import art.arcane.edict.virtual.VCommandable;
 import edu.gatech.gtri.bktree.BkTreeSearcher;
 import edu.gatech.gtri.bktree.Metric;
 import edu.gatech.gtri.bktree.MutableBkTree;
+import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.OptionalInt;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -21,24 +20,34 @@ public class BKTreeIndexer {
      * Based on pseudocode found at <a href="https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance">Wikipedia - DL-Distance</a>.
      * Modified to be lenient towards abbreviations by effectively ignoring characters in the name (2nd argument) past the length of the input (1st argument).
      */
-    private static final Metric<String> DAMERAU_LEVENSHTEIN_DISTANCE = (input, name) -> {
+    private static final Metric<String> DAMERAU_LEVENSHTEIN_DISTANCE = (name, input) -> {
 
-        // Custom modification
+
+        // Custom modification to favour initial letters of input
+        // TODO: Fix this trash modification
         int l2 = Math.min(input.length(), name.length());
 
-        Integer[][] map = new Integer[input.length() + 1][l2 + 1];
+        if (l2 == 0) {
+            return Integer.MAX_VALUE;
+        }
 
-        for (int i = 0; i <= input.length(); i++) {
+        System.out.println(input + " - " + name);
+
+        //// Original algorithm
+
+        Integer[][] map = new Integer[input.length()][l2];
+
+        for (int i = 0; i < input.length(); i++) {
             map[i][0] = i;
         }
 
-        for (int i = 0; i <= l2; i++) {
+        for (int i = 0; i < l2; i++) {
             map[0][i] = i;
         }
 
         int cost;
-        for (int i = 1; i <= input.length(); i++) {
-            for (int j = 1; j <= l2; j++) {
+        for (int i = 1; i < input.length(); i++) {
+            for (int j = 1; j < l2; j++) {
                 if (input.charAt(i) == name.charAt(j)) {
                     cost = 0;
                 } else {
@@ -60,7 +69,15 @@ public class BKTreeIndexer {
             }
         }
 
-        return map[input.length()][l2];
+        for (int i = 0; i < map.length; i++) {
+            System.out.println(i + " " + Arrays.toString(map[i]));
+        }
+
+        int result = map[input.length() - 1][l2 - 1];
+
+        System.out.println(result);
+
+        return result;
     };
 
     /**
@@ -104,47 +121,59 @@ public class BKTreeIndexer {
      * @param key the key
      * @param matchThreshold the percentage threshold
      * @param permissible function from a {@link VCommandable} to a boolean for whether the commandable can be run in current context
+     * @param system the system in which is being operated
      * @return the best matching commandable objects (all with the same match value)
      */
-    public @NotNull List<VCommandable> search(@NotNull String key, double matchThreshold, Function<? extends VCommandable, Object> permissible) {
+    public @NotNull List<VCommandable> search(@NotNull String key, double matchThreshold, Function<VCommandable, Boolean> permissible, @NotNull Edict system) {
 
         // Retrieve matches from tree.
-        Stream<BkTreeSearcher.Match<? extends VCommandable>> matches = searcher.search(
-                new VCommandable() {
-            @Override
-            public @NotNull String name() {
-                return key;
-            }
-
-            @Override
-            public @NotNull String[] aliases() {
-                return new String[0];
-            }
-
-            @Override
-            public @NotNull Permission permission() {
-                return null;
-            }
-
-            @Override
-            public @NotNull Edict system() {
-                return null;
-            }
-
-            @Override
-            public boolean run(@NotNull List<String> input, @NotNull User user) {
-                return false;
-            }
-        },
+        Set<BkTreeSearcher.Match<? extends VCommandable>> matches = searcher.search(
+                new BKTreeIndexable(key, system),
                 (int) (key.length() * matchThreshold)
-        ).stream().filter(match -> permissible.apply(match.getMatch()));
+        );
+
+        // Apply permissions
+        matches.removeIf(match -> !permissible.apply(match.getMatch()));
 
         // Find best match(es) if any.
-        if (matches.findAny().isEmpty()) {
+        if (matches.isEmpty()) {
             return new ArrayList<>();
         } else {
-            int bestMatch = matches.mapToInt(BkTreeSearcher.Match::getDistance).max().orElse(-1);
-            return matches.filter(match -> match.getDistance() == bestMatch).map(match -> (VCommandable) match.getMatch()).toList();
+            int bestMatch = matches.stream().mapToInt(BkTreeSearcher.Match::getDistance).max().orElse(-1);
+            return matches.stream().filter(match -> match.getDistance() == bestMatch).map(match -> (VCommandable) match.getMatch()).toList();
+        }
+    }
+
+    /**
+     * Placeholder class for a VCommandable
+     * @param name the name of the search input
+     * @param system the name of the system
+     */
+    private record BKTreeIndexable(@NotNull String name, @NotNull Edict system) implements VCommandable {
+
+        @Override
+        public @NotNull String name() {
+            return name;
+        }
+
+        @Override
+        public @NotNull String[] aliases() {
+            return new String[0];
+        }
+
+        @Override
+        public @NotNull Permission permission() {
+            return () -> null;
+        }
+
+        @Override
+        public @NotNull Edict system() {
+            return system;
+        }
+
+        @Override
+        public boolean run(@NotNull List<String> input, @NotNull User user) {
+            throw new NotImplementedException("Cannot run BKTreeIndexer.BKTreeIndexable");
         }
     }
 }

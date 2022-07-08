@@ -216,7 +216,7 @@ public class Edict {
             new UserContext().post(user);
             new SystemContext().post(this);
 
-            for (VCommandable root : indexer.search(input.get(0), settings().matchThreshold, (vCommandable -> user.hasPermission(vCommandable.permission())))) {
+            for (VCommandable root : indexer.search(input.get(0), settings().matchThreshold, (vCommandable -> user.hasPermission(vCommandable.permission())), this)) {
                 d(new StringMessage("Running root: " + root.getClass().getSimpleName()));
                 if (root.run(input.subList(1, input.size()), user)) {
                     return;
