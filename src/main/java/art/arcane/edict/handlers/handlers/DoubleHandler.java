@@ -2,7 +2,6 @@ package art.arcane.edict.handlers.handlers;
 
 import art.arcane.edict.exception.ParsingException;
 import art.arcane.edict.handlers.ParameterHandler;
-import art.arcane.edict.util.Randoms;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -37,6 +36,6 @@ public class DoubleHandler implements ParameterHandler<Double> {
 
     @Override
     public String getRandomDefault() {
-        return String.valueOf(Randoms.drand(0, 99.99));
+        return String.valueOf(randomDouble(0, 99.99));
     }
 }

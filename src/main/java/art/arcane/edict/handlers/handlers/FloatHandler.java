@@ -3,7 +3,6 @@ package art.arcane.edict.handlers.handlers;
 
 import art.arcane.edict.exception.ParsingException;
 import art.arcane.edict.handlers.ParameterHandler;
-import art.arcane.edict.util.Randoms;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -38,6 +37,6 @@ public class FloatHandler implements ParameterHandler<Float> {
 
     @Override
     public String getRandomDefault() {
-        return String.valueOf(Randoms.frand(0, 99.99f));
+        return String.valueOf(randomFloat(0, 99.99f));
     }
 }
