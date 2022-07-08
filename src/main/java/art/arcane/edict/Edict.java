@@ -19,8 +19,6 @@ import art.arcane.edict.virtual.VClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -101,13 +99,12 @@ public class Edict {
      * Uses default values:<br>
      *  - PermissionFactory: {@link #defaultPermissionFactory}<br>
      *  - EDictionary: settings, uses defaults of that class (by {@link EDictionary})<br>
-     *  - ConfigFile: {@link EDictionary#defaultConfigFile}<br>
      *  - SystemUser: {@link SystemUser} (Using System.out.)<br>
      *  - ParameterHandlers: {@link #defaultHandlers}<br>
      *  - ContextHandlers: {@code None}
      */
     public Edict(@NotNull Object... commandRoots) {
-        this(List.of(commandRoots), defaultPermissionFactory, new EDictionary(), EDictionary.defaultConfigFile, defaultSystemUser, defaultHandlers, new ContextHandler<?>[]{});
+        this(List.of(commandRoots), defaultPermissionFactory, new EDictionary(), defaultSystemUser, defaultHandlers, new ContextHandler<?>[]{});
     }
 
     /**
@@ -119,7 +116,7 @@ public class Edict {
      * @param parameterHandlers the handlers you wish to register.
      * @param contextHandlers the context handlers you wish to register.
      */
-    public Edict(@NotNull List<Object> commandRoots, @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @NotNull EDictionary settings, @NotNull File configFile, @NotNull SystemUser systemUser, @NotNull ParameterHandler<?>[] parameterHandlers, @NotNull ContextHandler<?>[] contextHandlers) {
+    public Edict(@NotNull List<Object> commandRoots, @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @NotNull EDictionary settings, @NotNull SystemUser systemUser, @NotNull ParameterHandler<?>[] parameterHandlers, @NotNull ContextHandler<?>[] contextHandlers) {
 
         // System
         this.systemUser = systemUser;
@@ -128,17 +125,7 @@ public class Edict {
         this.permissionFactory = permissionFactory;
 
         // Settings
-        try {
-            EDictionary.setup(settings, configFile);
-        } catch (IOException e) {
-            w(new StringMessage("Could not setup settings due to IOException on custom config file location " + configFile + " because of " + e));
-            try {
-                EDictionary.setup(settings, EDictionary.defaultConfigFile);
-            } catch (IOException ee) {
-                w(new StringMessage("Could not setup settings due to IOException on default config file location " + EDictionary.defaultConfigFile + " because of " + e));
-                w(new StringMessage("Will be using only in-system settings (these are reset when the program reboots)"));
-            }
-        }
+        EDictionary.set(settings);
 
         // System settings root
         if (EDictionary.get().settingsAsCommands) {

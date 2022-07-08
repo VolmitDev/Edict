@@ -4,15 +4,10 @@ import art.arcane.edict.api.Edicted;
 import art.arcane.edict.api.Command;
 import art.arcane.edict.api.Param;
 import art.arcane.edict.message.StringMessage;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
-import java.lang.reflect.Field;
-import java.nio.file.Path;
-import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -22,19 +17,13 @@ import java.util.concurrent.locks.ReentrantLock;
 public class EDictionary implements Edicted {
 
     /**
-     * Default config file location.
-     */
-    public static final File defaultConfigFile = new File(Path.of("").toAbsolutePath() + "/edict/config.json");
-
-    /**
      * Threshold required to match an input string successfully with a command.
      */
     public double matchThreshold = 0.6;
 
     @Command(description = "Set the matching threshold")
     public void setMatchThreshold(@Param(description = "The threshold") Double matchThreshold) {
-        update("setMatchThreshold", this.matchThreshold, matchThreshold);
-        this.matchThreshold = matchThreshold;
+        update("setMatchThreshold", this.matchThreshold, matchThreshold, () -> this.matchThreshold = matchThreshold);
     }
 
     /**
@@ -44,8 +33,7 @@ public class EDictionary implements Edicted {
 
     @Command(description = "Set whether settings can be used as commands. Does not hot-load.")
     public void setSettingsAsCommands(Boolean settingsAsCommands) {
-        update("settingsAsCommands", this.settingsAsCommands, settingsAsCommands);
-        this.settingsAsCommands = settingsAsCommands;
+        update("settingsAsCommands", this.settingsAsCommands, settingsAsCommands, () -> this.settingsAsCommands = settingsAsCommands);
     }
 
 
@@ -61,28 +49,50 @@ public class EDictionary implements Edicted {
      * @param setting the name of the setting
      * @param oldValue the old value of the setting
      * @param newValue the new value of the setting
+     * @param runUpdate to update the setting (with locking)
      */
-    private void update(String setting, Object oldValue, Object newValue) {
-        user().send(new StringMessage("Set " + setting + " from " + oldValue + " to " + newValue));
-        system().i(new StringMessage(user().name() + " set " + setting + " from " + oldValue + " to " + newValue));
+    private void update(@NotNull String setting, @NotNull Object oldValue, @NotNull Object newValue, @NotNull Runnable runUpdate) {
+        if (!LOCKS.containsKey(setting)) {
+            LOCKS_LOCK.lock();
+            if (!LOCKS.containsKey(setting)) {
+                LOCKS.put(setting, new ReentrantLock());
+            }
+            LOCKS_LOCK.unlock();
+        }
+        if (LOCKS.get(setting).isLocked()) {
+            user().send(new StringMessage("You tried setting " + setting + " from " + oldValue + " to " + newValue + " but another user is updating it at the same time! Try again."));
+        } else {
+            LOCKS.get(setting).lock();
+            user().send(new StringMessage("Set " + setting + " from " + oldValue + " to " + newValue));
+            system().i(new StringMessage(user().name() + " set " + setting + " from " + oldValue + " to " + newValue));
+            if (settings == null) {
+                SETTINGS_LOCK.lock();
+                if (settings == null) {
+                    settings = new EDictionary();
+                }
+                SETTINGS_LOCK.unlock();
+            }
+            runUpdate.run();
+            LOCKS.get(setting).unlock();
+        }
     }
 
     /// Static settings to make this baby work :)
 
     /**
-     * GSON.
+     * Setting update lock.
      */
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final ConcurrentHashMap<String, ReentrantLock> LOCKS = new ConcurrentHashMap<>();
 
     /**
-     * Lock.
+     * LOCKS lock.
      */
-    private static final ReentrantLock LOCK = new ReentrantLock();
+    private static final ReentrantLock LOCKS_LOCK = new ReentrantLock();
 
     /**
-     * File.
+     * Settings lock.
      */
-    private static File configFile;
+    private static final ReentrantLock SETTINGS_LOCK = new ReentrantLock();
 
     /**
      * Singleton.
@@ -90,89 +100,26 @@ public class EDictionary implements Edicted {
     private static EDictionary settings;
 
     /**
-     * File last changed.
+     * Setup.
+     * @param settings settings that should be used. If {@code null} uses default settings.
      */
-    private static Long fileLastModified;
-
-    /**
-     * Initial hash code.
-     */
-    private static Integer currentHash;
-
-    /**
-     * Set up the settings system.
-     * @param edict the initial settings. If {@code null} uses fresh settings.
-     * @param file the configuration file
-     * @throws IOException see {@link FileWriter#FileWriter(File)}
-     */
-    public static void setup(@Nullable EDictionary edict, @NotNull File file) throws IOException {
-        LOCK.lock();
-        settings = edict == null ? new EDictionary() : edict;
-        configFile = file;
-        if (!configFile.exists()) {
-            if (!file.getParentFile().mkdirs() || !configFile.createNewFile()) {
-                System.out.println("Config file @ " + configFile + " did not exist but failed to be created...?");
-            }
-        }
-        BufferedWriter bw = new BufferedWriter(new FileWriter(configFile));
-        bw.write(GSON.toJson(settings));
-        bw.flush();
-        bw.close();
-        currentHash = settings.hashCode();
-        fileLastModified = file.lastModified();
-        LOCK.unlock();
+    public static void set(@Nullable EDictionary settings) {
+        SETTINGS_LOCK.lock();
+        EDictionary.settings = settings == null ? new EDictionary() : settings;
+        SETTINGS_LOCK.unlock();
     }
 
     /**
-     * Update and load the config file. Corrects for differences between file and class in both directions.
-     * Make sure to run {@link #setup(EDictionary, File)} first.
-     * @return the settings. If {@link #setup(EDictionary, File)} was not called yet, it returns a fresh set of settings.
+     * Corrects for differences because of multithreaded between file and class in both directions
+     * @return the settings. If {@link #set(EDictionary)} was not called yet, it returns a fresh set of settings.
      */
     public static @NotNull EDictionary get() {
 
-        LOCK.lock();
-
-        // Setup failed
+        // Default settings until setup
         if (settings == null) {
             return new EDictionary();
         }
 
-        try {
-
-            // Missing config or settings changed
-            if (!configFile.exists() || currentHash != settings.hashCode()) {
-                BufferedWriter bw = new BufferedWriter(new FileWriter(configFile));
-                bw.write(GSON.toJson(settings));
-                bw.flush();
-                bw.close();
-                fileLastModified = configFile.lastModified();
-                currentHash = settings.hashCode();
-            }
-
-            // File changed
-            if (configFile.lastModified() > EDictionary.fileLastModified) {
-                settings = GSON.fromJson(new BufferedReader(new FileReader(configFile)), EDictionary.class);
-                fileLastModified = configFile.lastModified();
-                currentHash = settings.hashCode();
-            }
-
-        } catch (IOException e) {
-            System.out.println("IOException during settings loading: " + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
-        }
-
-        final EDictionary s = settings;
-
-        LOCK.unlock();
-
-        return s;
-    }
-
-    @Override
-    public int hashCode() {
-        int code = 0;
-        for (Field field : getClass().getFields()) {
-            code += field.hashCode();
-        }
-        return code;
+        return settings;
     }
 }

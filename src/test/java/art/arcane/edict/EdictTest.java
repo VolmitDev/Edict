@@ -17,8 +17,8 @@ class EdictTest {
     TestUser TESTUSER = new TestUser();
 
     @BeforeAll
-    static void setup() throws IOException {
-        EDictionary.setup(null, EDictionary.defaultConfigFile);
+    static void setup() {
+        EDictionary.set(null);
     }
 
     @Test
