@@ -2,12 +2,15 @@ package art.arcane.edict;
 
 import art.arcane.edict.virtual.VCommandable;
 import art.arcane.edict.virtual.VIndexable;
+import edu.gatech.gtri.bktree.BkTreeSearcher;
 import edu.gatech.gtri.bktree.Metric;
 import edu.gatech.gtri.bktree.MutableBkTree;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.OptionalInt;
+import java.util.Set;
 
-public class BKTesting {
+public class BKTreeIndexer {
 
     /**
      * Damerau-Levenshtein Distance Algorithm.
@@ -76,5 +79,31 @@ public class BKTesting {
     /**
      * BK-Tree (<a href="https://github.com/gtri/bk-tree">GitHub</a>) for {@link VIndexable} elements.
      */
-    private static final MutableBkTree<VIndexable> bkTree = new MutableBkTree<>(DLD_EDICT_ADAPTER);
+    private final MutableBkTree<VIndexable> bkTree = new MutableBkTree<>(DLD_EDICT_ADAPTER);
+
+    private final BkTreeSearcher<VIndexable> searcher;
+
+    public BKTreeIndexer(VCommandable... values) {
+        bkTree.addAll(values);
+        searcher = new BkTreeSearcher<>(bkTree);
+    }
+
+    public boolean search(@NotNull String key, double matchThreshold) {
+
+        return searcher.search(new VIndexable() {
+            @Override
+            public @NotNull String name() {
+                return key;
+            }
+
+            @Override
+            public @NotNull String[] aliases() {
+                return new String[0];
+            }
+        }, (int) (key.length() * matchThreshold)).size() > 0;
+    }
+
+
+
+
 }
