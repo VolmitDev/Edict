@@ -24,5 +24,6 @@ public class ParameterHandlerTest {
         assertEquals(1600, SUT.getMultiplier(new AtomicReference<>("1ch")));
         assertEquals(1, SUT.getMultiplier(new AtomicReference<>("1")));
         assertNotEquals(100, SUT.getMultiplier(new AtomicReference<>("100")));
+        assertEquals(100, SUT.getMultiplier(new AtomicReference<>("100")) * 100);
     }
 }
