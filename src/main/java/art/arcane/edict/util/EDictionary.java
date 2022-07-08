@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Settings class.
@@ -73,6 +74,11 @@ public class EDictionary implements Edicted {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     /**
+     * Lock.
+     */
+    private static final ReentrantLock LOCK = new ReentrantLock();
+
+    /**
      * File.
      */
     private static File configFile;
@@ -96,12 +102,17 @@ public class EDictionary implements Edicted {
      * Set up the settings system.
      * @param edict the initial settings
      * @param file the configuration file
-     * @throws IOException see {@link #saveToFile()}
+     * @throws IOException see {@link FileWriter#FileWriter(File)}
      */
     public static void setup(EDictionary edict, File file) throws IOException {
+        LOCK.lock();
         settings = edict;
         configFile = file;
-        saveToFile();
+        BufferedWriter bw = new BufferedWriter(new FileWriter(configFile));
+        bw.write(GSON.toJson(settings));
+        bw.flush();
+        bw.close();
+        LOCK.unlock();
     }
 
     /**
@@ -110,6 +121,8 @@ public class EDictionary implements Edicted {
      */
     public static @Nullable EDictionary get() {
 
+        LOCK.lock();
+
         // Setup failed
         if (settings == null) {
             return null;
@@ -117,23 +130,19 @@ public class EDictionary implements Edicted {
 
         try {
 
-            // Missing config
-            if (!configFile.exists()) {
-                saveToFile();
+            // Missing config or settings changed
+            if (!configFile.exists() || currentHash != settings.hashCode()) {
+                BufferedWriter bw = new BufferedWriter(new FileWriter(configFile));
+                bw.write(GSON.toJson(settings));
+                bw.flush();
+                bw.close();
                 fileLastModified = configFile.lastModified();
                 currentHash = settings.hashCode();
             }
 
             // File changed
             if (configFile.lastModified() > EDictionary.fileLastModified) {
-                settings = loadFromFile();
-                fileLastModified = configFile.lastModified();
-                currentHash = settings.hashCode();
-            }
-
-            // Settings changed
-            if (currentHash != settings.hashCode()) {
-                saveToFile();
+                settings = GSON.fromJson(new BufferedReader(new FileReader(configFile)), EDictionary.class);
                 fileLastModified = configFile.lastModified();
                 currentHash = settings.hashCode();
             }
@@ -142,27 +151,11 @@ public class EDictionary implements Edicted {
             System.out.println("IOException during settings loading: " + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
         }
 
-        return settings;
-    }
+        final EDictionary s = settings;
 
-    /**
-     * Save config to file. Can be non-existent, will be created if so.
-     * @throws IOException see {@link FileWriter#FileWriter(File)}
-     */
-    private static void saveToFile() throws IOException {
-        BufferedWriter bw = new BufferedWriter(new FileWriter(configFile));
-        bw.write(GSON.toJson(settings));
-        bw.flush();
-        bw.close();
-    }
+        LOCK.unlock();
 
-    /**
-     * Load config from file.
-     * @return the settings
-     * @throws FileNotFoundException if the file does not exist
-     */
-    private static EDictionary loadFromFile() throws FileNotFoundException {
-        return GSON.fromJson(new BufferedReader(new FileReader(configFile)), EDictionary.class);
+        return s;
     }
 
     @Override
