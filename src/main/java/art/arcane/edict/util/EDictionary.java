@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -23,7 +24,7 @@ public class EDictionary implements Edicted {
     /**
      * Default config file location.
      */
-    public static final File defaultConfigFile = new File("edict/config.json");
+    public static final File defaultConfigFile = new File(Path.of("").toAbsolutePath() + "/edict/config.json");
 
     /**
      * Threshold required to match an input string successfully with a command.
@@ -109,7 +110,7 @@ public class EDictionary implements Edicted {
         settings = edict;
         configFile = file;
         if (!configFile.exists()) {
-            if (!configFile.createNewFile()) {
+            if (!file.getParentFile().mkdirs() || !configFile.createNewFile()) {
                 System.out.println("Config file @ " + configFile + " did not exist but failed to be created...?");
             }
         }
