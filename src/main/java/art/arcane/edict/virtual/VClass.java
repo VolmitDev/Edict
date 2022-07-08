@@ -168,7 +168,7 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
 
         // Send help when this is the final node
         if (input.isEmpty()) {
-            // TODO: Send help
+            // TODO: Send category help
             user.send(new StringMessage(name() + ": Need more input to reach command"));
             return true;
         }

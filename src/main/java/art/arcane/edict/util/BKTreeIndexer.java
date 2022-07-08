@@ -24,7 +24,7 @@ public class BKTreeIndexer {
 
 
         // Custom modification to favour initial letters of input
-        // TODO: Fix this trash modification
+        // TODO: DL-Distance Optimization Fix
         int l2 = Math.min(input.length(), name.length());
 
         if (l2 == 0) {

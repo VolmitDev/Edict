@@ -36,13 +36,13 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
     @Override
     public boolean run(@NotNull List<String> input, @NotNull User user) {
         if (input.size() < params.size()) {
-            // TODO: Send help
+            // TODO: Send command help
             user.send(new StringMessage("Send more parameters bitch"));
             return true;
         }
         user.send(new StringMessage("Running command " + name() + " with input: " + String.join(", ", input)));
         try {
-            // TODO: Proper implementation that actually supports parameters. smh.
+            // TODO: Parameter functionality
             method.invoke(parent.instance());
             return true;
         } catch (IllegalAccessException | InvocationTargetException e) {

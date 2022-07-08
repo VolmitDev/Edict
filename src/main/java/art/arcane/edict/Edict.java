@@ -25,7 +25,7 @@ import java.util.function.BiFunction;
 
 /**
  * The main System.
- * TODO: Make colored text
+ * TODO: Colored text
  */
 public class Edict {
 
@@ -194,7 +194,7 @@ public class Edict {
 
             // Blank check
             if (input.isEmpty()) {
-                // TODO: Send help
+                // TODO: Send root command help
                 user.send(new StringMessage("This is an empty command wtf do you want"));
                 return;
             }

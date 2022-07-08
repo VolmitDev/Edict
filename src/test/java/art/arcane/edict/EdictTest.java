@@ -11,6 +11,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EdictTest {
 
+    // TODO: Complex command tests
+
     final Edict SUT = new Edict(new TestCommandClass());
     final TestUser TESTUSER = new TestUser();
 
