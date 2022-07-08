@@ -177,35 +177,36 @@ public class Edict {
      * @param user the user that ran the command
      */
     public void command(@NotNull String command, @NotNull User user) {
+        new Thread(() -> {
+            final String fCommand = cleanCommand(command);
 
-        // TODO: Threading. Atomic settings. Atomic static variables. Pain.
+            i(new StringMessage(user.name() + " sent command: " + fCommand));
 
-        command = cleanCommand(command);
+            List<String> input = List.of(fCommand.split(" "));
 
-        i(new StringMessage(user.name() + " sent command: " + command));
-
-        List<String> input = List.of(command.split(" "));
-
-        // Blank check
-        if (input.isEmpty()) {
-            // TODO: Send help
-            user.send(new StringMessage("This is an empty command wtf do you want"));
-            return;
-        }
-
-        d(new StringMessage("Running command: " + command));
-
-        // Loop over roots
-        new UserContext().post(user);
-        new SystemContext().post(this);
-        for (VCommandable root : VClass.sortAndFilterChildren(rootCommands, input.get(0), user, settings().matchThreshold)) {
-            if (root.run(input.subList(1, input.size()), user)) {
+            // Blank check
+            if (input.isEmpty()) {
+                // TODO: Send help
+                user.send(new StringMessage("This is an empty command wtf do you want"));
                 return;
             }
-        }
 
-        d(new StringMessage("Could not find suitable command for input: " + command));
-        user.send(new StringMessage("Failed to run any commands for your input. Please try (one of): " + String.join(", ", rootCommands.stream().map(VCommandable::name).toList())));
+            d(new StringMessage("Running command: " + fCommand));
+
+            // Loop over roots
+            new UserContext().post(user);
+            new SystemContext().post(this);
+            for (VCommandable root : VClass.sortAndFilterChildren(rootCommands, input.get(0), user, settings().matchThreshold)) {
+                d(new StringMessage("Running root: " + root.getClass().getSimpleName()));
+                if (root.run(input.subList(1, input.size()), user)) {
+                    return;
+                }
+            }
+
+            d(new StringMessage("Could not find suitable command for input: " + fCommand));
+            user.send(new StringMessage("Failed to run any commands for your input. Please try (one of): " + String.join(", ", rootCommands.stream().map(VCommandable::name).toList())));
+
+        }).start();
     }
 
     /**
