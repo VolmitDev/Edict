@@ -69,6 +69,11 @@ public class Edict {
     private final List<VCommandable> rootCommands = new ArrayList<>();
 
     /**
+     * System indexer.
+     */
+    private final BKTreeIndexer indexer = new BKTreeIndexer();
+
+    /**
      * Permission factory
      */
     private final BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory;
@@ -87,6 +92,7 @@ public class Edict {
      * System user.
      */
     private final SystemUser systemUser;
+
 
     /**
      * Create a new command system.<br>
@@ -152,6 +158,9 @@ public class Edict {
             rootCommands.add(vRoot);
         }
 
+        // Indexer
+        indexer.addAll(rootCommands);
+
         // Handlers
         this.parameterHandlerRegistry = new ParameterHandlerRegistry(defaultHandlers);
         if (parameterHandlers != null) {
@@ -206,7 +215,8 @@ public class Edict {
             // Loop over roots
             new UserContext().post(user);
             new SystemContext().post(this);
-            for (VCommandable root : VClass.sortAndFilterChildren(rootCommands, input.get(0), user, settings().matchThreshold)) {
+
+            for (VCommandable root : indexer.search(input.get(0), settings().matchThreshold, (vCommandable -> user.hasPermission(vCommandable.permission())))) {
                 d(new StringMessage("Running root: " + root.getClass().getSimpleName()));
                 if (root.run(input.subList(1, input.size()), user)) {
                     return;

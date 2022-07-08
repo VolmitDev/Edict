@@ -1,14 +1,18 @@
 package art.arcane.edict;
 
+import art.arcane.edict.permission.Permission;
+import art.arcane.edict.user.User;
 import art.arcane.edict.virtual.VCommandable;
-import art.arcane.edict.virtual.VIndexable;
 import edu.gatech.gtri.bktree.BkTreeSearcher;
 import edu.gatech.gtri.bktree.Metric;
 import edu.gatech.gtri.bktree.MutableBkTree;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.OptionalInt;
-import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class BKTreeIndexer {
 
@@ -60,15 +64,14 @@ public class BKTreeIndexer {
     };
 
     /**
-     * Adapter for {@link #DAMERAU_LEVENSHTEIN_DISTANCE} for {@link VIndexable} constructs.
+     * Adapter for {@link #DAMERAU_LEVENSHTEIN_DISTANCE} for {@link VCommandable} constructs.
      */
-    private static final Metric<VIndexable> DLD_EDICT_ADAPTER = (input, vCommandable) -> {
-        if (!(vCommandable instanceof VCommandable)) {
-            throw new IllegalArgumentException("Second argument must be VCommandable!");
-        }
+    private static final Metric<VCommandable> DLD_EDICT_ADAPTER = (input, vClass) -> {
 
-        OptionalInt result = ((VCommandable) vCommandable).allNames().stream().mapToInt(name -> DAMERAU_LEVENSHTEIN_DISTANCE.distance(input.name(), name)).min();
+        // Min distance (best)
+        OptionalInt result = vClass.allNames().stream().mapToInt(name -> DAMERAU_LEVENSHTEIN_DISTANCE.distance(input.name(), name)).min();
 
+        // Null result
         if (result.isEmpty()) {
             throw new IllegalArgumentException("Second argument has no names!");
         }
@@ -77,20 +80,37 @@ public class BKTreeIndexer {
     };
 
     /**
-     * BK-Tree (<a href="https://github.com/gtri/bk-tree">GitHub</a>) for {@link VIndexable} elements.
+     * BK-Tree (<a href="https://github.com/gtri/bk-tree">GitHub</a>) for {@link VCommandable} elements.
      */
-    private final MutableBkTree<VIndexable> bkTree = new MutableBkTree<>(DLD_EDICT_ADAPTER);
+    private final MutableBkTree<VCommandable> bkTree = new MutableBkTree<>(DLD_EDICT_ADAPTER);
 
-    private final BkTreeSearcher<VIndexable> searcher;
+    /**
+     * Searcher of the {@link #bkTree}.
+     */
+    private final BkTreeSearcher<VCommandable> searcher = new BkTreeSearcher<>(bkTree);
 
-    public BKTreeIndexer(VCommandable... values) {
+    /**
+     * Construct a tree indexer.
+     * @param values the values of the tree. Cannot be modified after. Should be all children of the class.
+     */
+    public void addAll(Iterable<? extends VCommandable> values) {
         bkTree.addAll(values);
-        searcher = new BkTreeSearcher<>(bkTree);
     }
 
-    public boolean search(@NotNull String key, double matchThreshold) {
+    /**
+     * Search the tree with some key.
+     * The threshold is the percentage of the input string that has to match the name, discarding characters in the name after the length of the input string's length.
+     * This is subject to rounding and - since fuzzy searching is effectively guessing - mistakes. The human mind is impossible to fully understand.
+     * @param key the key
+     * @param matchThreshold the percentage threshold
+     * @param permissible function from a {@link VCommandable} to a boolean for whether the commandable can be run in current context
+     * @return the best matching commandable objects (all with the same match value)
+     */
+    public @NotNull List<VCommandable> search(@NotNull String key, double matchThreshold, Function<? extends VCommandable, Object> permissible) {
 
-        return searcher.search(new VIndexable() {
+        // Retrieve matches from tree.
+        Stream<BkTreeSearcher.Match<? extends VCommandable>> matches = searcher.search(
+                new VCommandable() {
             @Override
             public @NotNull String name() {
                 return key;
@@ -100,10 +120,31 @@ public class BKTreeIndexer {
             public @NotNull String[] aliases() {
                 return new String[0];
             }
-        }, (int) (key.length() * matchThreshold)).size() > 0;
+
+            @Override
+            public @NotNull Permission permission() {
+                return null;
+            }
+
+            @Override
+            public @NotNull Edict system() {
+                return null;
+            }
+
+            @Override
+            public boolean run(@NotNull List<String> input, @NotNull User user) {
+                return false;
+            }
+        },
+                (int) (key.length() * matchThreshold)
+        ).stream().filter(match -> permissible.apply(match.getMatch()));
+
+        // Find best match(es) if any.
+        if (matches.findAny().isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            int bestMatch = matches.mapToInt(BkTreeSearcher.Match::getDistance).max().orElse(-1);
+            return matches.filter(match -> match.getDistance() == bestMatch).map(match -> (VCommandable) match.getMatch()).toList();
+        }
     }
-
-
-
-
 }

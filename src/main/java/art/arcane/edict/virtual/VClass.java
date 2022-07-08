@@ -1,5 +1,6 @@
 package art.arcane.edict.virtual;
 
+import art.arcane.edict.BKTreeIndexer;
 import art.arcane.edict.Edict;
 import art.arcane.edict.api.Command;
 import art.arcane.edict.message.StringMessage;
@@ -12,9 +13,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.MissingResourceException;
+import java.util.*;
 
 /**
  * Record of a virtual command category. Represents a position in the tree of commands.
@@ -23,11 +22,11 @@ import java.util.MissingResourceException;
  * I.e. like a branch in a tree data-structure.
  * @param name the name of the command node
  * @param command the command annotation
- * @param children further node(s)
+ * @param indexer indexer of further node(s)
  * @param permission permission node for this category
  * @param system the command system
  */
-public record VClass(@NotNull String name, @NotNull Command command, @NotNull Object instance, @NotNull List<VCommandable> children, @Nullable VClass parent, @NotNull Permission permission, @NotNull Edict system) implements VCommandable {
+public record VClass(@NotNull String name, @NotNull Command command, @NotNull Object instance, @Nullable VClass parent, @NotNull List<VCommandable> children, @NotNull BKTreeIndexer indexer, @NotNull Permission permission, @NotNull Edict system) implements VCommandable {
 
     /**
      * Create a new category class.
@@ -63,8 +62,9 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
                 annotation.name().isBlank() ? clazz.getSimpleName() : annotation.name(),
                 annotation,
                 instance,
-                new ArrayList<>(),
                 parent,
+                new ArrayList<>(),
+                new BKTreeIndexer(),
                 system.makePermission(parent == null ? null : parent.permission, annotation.permission()),
                 system
         );
@@ -140,42 +140,10 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
             return null;
         }
 
+        // Add children to tree
+        category.indexer.addAll(category.children);
+
         return category;
-    }
-
-    /**
-     * Sort and filter children nodes by some input and a user.
-     * @param options the children (options) to sort & filter
-     * @param input the input string to match against
-     * @param user the user to check for permissions
-     * @return a sorted list consisting of a subset of the children or {@code null} if none matched even slightly or had permission
-     */
-    public static @NotNull List<VCommandable> sortAndFilterChildren(@NotNull List<VCommandable> options, @NotNull String input, @NotNull User user, double threshold) {
-        // TODO: Cache? - Probably only if VCommandable::match is slow. It's threaded.
-
-        // Get scores & max
-        List<Integer> values = new ArrayList<>();
-        int max = 0;
-        for (VCommandable option : options) {
-            int score = option.match(input, user);
-            max = Math.max(max, score);
-            values.add(score);
-        }
-
-        List<VCommandable> result = new ArrayList<>();
-
-        // Return null if none scored higher than the threshold
-        if (max < threshold) {
-            return result;
-        }
-
-        // Retrieve results from options based on max scores
-        for (int i = 0; i < values.size(); i++) {
-            if (values.get(i) == max) {
-                result.add(options.get(i));
-            }
-        }
-        return result;
     }
 
     @Override
@@ -188,6 +156,14 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
         return command.aliases();
     }
 
+    /**
+     * The tree indexer of the commandable.
+     * @return the tree indexer of the commandable
+     */
+    public @NotNull BKTreeIndexer indexer() {
+        return indexer;
+    }
+
     @Override
     public boolean run(@NotNull List<String> input, @NotNull User user) {
 
@@ -198,9 +174,16 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
             return true;
         }
 
+        // Get children
+        List<VCommandable> children = indexer.search(
+                input.get(0),
+                system.settings().matchThreshold,
+                vCommandable -> user.hasPermission(vCommandable.permission())
+        );
+
         // Send command further downstream
-        for (VCommandable root : sortAndFilterChildren(children, input.get(0), user, system.settings().matchThreshold)) {
-            if (root.run(input.subList(1, input.size()), user)) {
+        for (VCommandable child : children) {
+            if (child.run(input.subList(1, input.size()), user)) {
                 return true;
             }
         }
