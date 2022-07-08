@@ -70,7 +70,6 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
         );
 
         // Loop over method declarations to find commands
-        // TODO: Run this by Dan
         for (Method method : clazz.getDeclaredMethods()) {
             if (!method.isAnnotationPresent(Command.class)) {
                 system.d(new StringMessage(clazz.getSimpleName() + "#" + method.getName() + "() not registered because not annotated by @Command"));
@@ -89,15 +88,15 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
         }
 
         // Loop over fields to find more command categories
-        // TODO: Run this by Dan
         for (Field field : clazz.getDeclaredFields()) {
-            field.setAccessible(true);
 
             // Annotation check
             if (!field.getType().isAnnotationPresent(Command.class)) {
                 system.d(new StringMessage(clazz.getSimpleName() + "#" + field.getName() + " not registered because not annotated by @Command"));
                 continue;
             }
+
+            field.setAccessible(true);
 
             // Construct instance
             Object fInstance = null;
