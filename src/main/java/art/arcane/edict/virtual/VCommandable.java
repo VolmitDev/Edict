@@ -1,5 +1,6 @@
 package art.arcane.edict.virtual;
 
+import art.arcane.edict.BKTreeIndexer;
 import art.arcane.edict.Edict;
 import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.permission.Permission;
@@ -10,19 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public interface VCommandable {
-
-    /**
-     * Name of the commandable.
-     * @return the name of the commandable
-     */
-    @NotNull String name();
-
-    /**
-     * List of aliases for this commandable.
-     * @return list of aliases for this commandable
-     */
-    @NotNull String[] aliases();
+public interface VCommandable extends VIndexable {
 
     /**
      * All names (including aliases) of the commandable.
@@ -45,6 +34,12 @@ public interface VCommandable {
      * @return the system of the commandable
      */
     @NotNull Edict system();
+
+    /**
+     * The tree indexer of the commandable.
+     * @return the tree indexer of the commandable
+     */
+    @NotNull BKTreeIndexer indexer();
 
     /**
      * Run this commandable. It is assumed that this is in fact the right commandable, and that the user has permission.
@@ -72,7 +67,7 @@ public interface VCommandable {
         // TODO: Implement this properly
         if (allNames().contains(input)) {
             return 100;
-        } else {
+        } else if (indexer().search(input, system().settings().matchThreshold)) {
             return 0;
         }
     }
