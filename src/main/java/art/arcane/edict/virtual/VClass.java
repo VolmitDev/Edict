@@ -1,6 +1,6 @@
 package art.arcane.edict.virtual;
 
-import art.arcane.edict.BKTreeIndexer;
+import art.arcane.edict.util.BKTreeIndexer;
 import art.arcane.edict.Edict;
 import art.arcane.edict.api.Command;
 import art.arcane.edict.message.StringMessage;

@@ -1,5 +1,6 @@
-package art.arcane.edict;
+package art.arcane.edict.util;
 
+import art.arcane.edict.Edict;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
 import art.arcane.edict.virtual.VCommandable;
