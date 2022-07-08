@@ -108,6 +108,11 @@ public class EDictionary implements Edicted {
         LOCK.lock();
         settings = edict;
         configFile = file;
+        if (!configFile.exists()) {
+            if (!configFile.createNewFile()) {
+                System.out.println("Config file @ " + configFile + " did not exist but failed to be created...?");
+            }
+        }
         BufferedWriter bw = new BufferedWriter(new FileWriter(configFile));
         bw.write(GSON.toJson(settings));
         bw.flush();
@@ -117,15 +122,16 @@ public class EDictionary implements Edicted {
 
     /**
      * Update and load the config file. Corrects for differences between file and class in both directions.
-     * @return the settings, or null if {@link #setup(EDictionary, File)} was not yet called.
+     * Make sure to run {@link #setup(EDictionary, File)} first.
+     * @return the settings. If {@link #setup(EDictionary, File)} was not called yet, it returns a fresh set of settings.
      */
-    public static @Nullable EDictionary get() {
+    public static @NotNull EDictionary get() {
 
         LOCK.lock();
 
         // Setup failed
         if (settings == null) {
-            return null;
+            return new EDictionary();
         }
 
         try {
