@@ -7,6 +7,7 @@ import art.arcane.edict.message.StringMessage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -14,7 +15,6 @@ import java.util.Arrays;
 
 /**
  * Settings class.
- * TODO: Hot-load changes
  */
 @Command(name = "edictSettings", description = "Settings for the Edict command system this is using. Changes are hot-loaded", permission = "edict")
 public class EDictionary implements Edicted {
@@ -40,7 +40,7 @@ public class EDictionary implements Edicted {
      */
     public boolean settingsAsCommands = false;
 
-    @Command(description = "Set whether settings can be used as commands")
+    @Command(description = "Set whether settings can be used as commands. Does not hot-load.")
     public void setSettingsAsCommands(Boolean settingsAsCommands) {
         update("settingsAsCommands", this.settingsAsCommands, settingsAsCommands);
         this.settingsAsCommands = settingsAsCommands;
@@ -106,17 +106,13 @@ public class EDictionary implements Edicted {
 
     /**
      * Update and load the config file. Corrects for differences between file and class in both directions.
-     * @return the settings
+     * @return the settings, or null if {@link #setup(EDictionary, File)} was not yet called.
      */
-    public static @NotNull EDictionary get() {
+    public static @Nullable EDictionary get() {
 
         // Setup failed
         if (settings == null) {
-            try {
-                setup(new EDictionary(), defaultConfigFile);
-            } catch (IOException ignored) {
-                settings = new EDictionary();
-            }
+            return null;
         }
 
         try {

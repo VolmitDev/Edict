@@ -29,16 +29,4 @@ class EdictTest {
             fail(e);
         }
     }
-
-    @Test
-    void i() {
-    }
-
-    @Test
-    void w() {
-    }
-
-    @Test
-    void d() {
-    }
 }
