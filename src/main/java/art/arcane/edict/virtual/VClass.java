@@ -187,7 +187,7 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
         if (input.isEmpty()) {
             // TODO: Send help
             user.send(new StringMessage(name() + ": Need more input to reach command"));
-            return false;
+            return true;
         }
 
         // Send command further downstream

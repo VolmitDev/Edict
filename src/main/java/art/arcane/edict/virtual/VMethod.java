@@ -38,15 +38,20 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
         if (input.size() < params.size()) {
             // TODO: Send help
             user.send(new StringMessage("Send more parameters bitch"));
-            return false;
+            return true;
         }
         user.send(new StringMessage("Running command " + name() + " with input: " + String.join(", ", input)));
         try {
-            // TODO: Proper implementation
+            // TODO: Proper implementation that actually supports parameters. smh.
             method.invoke(parent.instance());
+            return true;
         } catch (IllegalAccessException | InvocationTargetException e) {
-            // TODO: Handle
+            long l = System.currentTimeMillis();
+            user.send(new StringMessage("WARNING: System error, please contact your admin. Code: " + l));
+            system.w(new StringMessage("(Code: " + l + ") Failed to invoke " + method.getName() + " on " + parent.getClass().getSimpleName() + " due to " + e));
+            system.w(new StringMessage(Arrays.toString(e.getStackTrace())));
+            system.w(new StringMessage("This is MOST likely an issue with Edict. Please contact us with the method (and class) and command that was ran."));
         }
-        return true;
+        return false;
     }
 }

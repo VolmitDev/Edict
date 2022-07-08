@@ -50,7 +50,8 @@ public interface VCommandable {
      * Run this commandable. It is assumed that this is in fact the right commandable, and that the user has permission.
      * @param input the remaining input string to parse with
      * @param user the user that ran the command
-     * @return
+     * @return true if a command leaf successfully ran,
+     * or one of the branches sent help for a command (because the command ended there).
      */
     boolean run(@NotNull List<String> input, @NotNull User user);
 
