@@ -101,13 +101,13 @@ public class EDictionary implements Edicted {
 
     /**
      * Set up the settings system.
-     * @param edict the initial settings
+     * @param edict the initial settings. If {@code null} uses fresh settings.
      * @param file the configuration file
      * @throws IOException see {@link FileWriter#FileWriter(File)}
      */
-    public static void setup(EDictionary edict, File file) throws IOException {
+    public static void setup(@Nullable EDictionary edict, @NotNull File file) throws IOException {
         LOCK.lock();
-        settings = edict;
+        settings = edict == null ? new EDictionary() : edict;
         configFile = file;
         if (!configFile.exists()) {
             if (!file.getParentFile().mkdirs() || !configFile.createNewFile()) {
@@ -118,6 +118,8 @@ public class EDictionary implements Edicted {
         bw.write(GSON.toJson(settings));
         bw.flush();
         bw.close();
+        currentHash = settings.hashCode();
+        fileLastModified = file.lastModified();
         LOCK.unlock();
     }
 
