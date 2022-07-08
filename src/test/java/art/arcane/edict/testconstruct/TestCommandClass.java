@@ -1,8 +1,7 @@
 package art.arcane.edict.testconstruct;
 
-import art.arcane.edict.Edicted;
-import art.arcane.edict.command.Command;
-import art.arcane.edict.command.Param;
+import art.arcane.edict.api.Edicted;
+import art.arcane.edict.api.Command;
 import art.arcane.edict.message.StringMessage;
 
 @Command(name = "test", description = "a test class", aliases = "alias")

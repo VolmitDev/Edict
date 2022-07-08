@@ -1,7 +1,8 @@
-package art.arcane.edict;
+package art.arcane.edict.util;
 
-import art.arcane.edict.command.Command;
-import art.arcane.edict.command.Param;
+import art.arcane.edict.api.Edicted;
+import art.arcane.edict.api.Command;
+import art.arcane.edict.api.Param;
 import art.arcane.edict.message.StringMessage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

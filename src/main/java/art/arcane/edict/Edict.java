@@ -12,6 +12,7 @@ import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.SystemUser;
 import art.arcane.edict.user.User;
+import art.arcane.edict.util.EDictionary;
 import art.arcane.edict.virtual.VCommandable;
 import art.arcane.edict.virtual.VClass;
 import org.jetbrains.annotations.NotNull;

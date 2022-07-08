@@ -1,11 +1,12 @@
-package art.arcane.edict;
+package art.arcane.edict.api;
 
+import art.arcane.edict.Edict;
 import art.arcane.edict.context.SystemContext;
 import art.arcane.edict.context.UserContext;
 import art.arcane.edict.user.User;
 
 /**
- * Interface for classes in the Edict system. Classes implementing this interface must still implement {@link art.arcane.edict.command.Command}.
+ * Interface for classes in the Edict system. Classes implementing this interface must still implement {@link art.arcane.edict.api.Command}.
  */
 public interface Edicted {
 

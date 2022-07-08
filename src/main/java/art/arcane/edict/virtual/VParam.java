@@ -1,7 +1,7 @@
 package art.arcane.edict.virtual;
 
 import art.arcane.edict.Edict;
-import art.arcane.edict.command.Param;
+import art.arcane.edict.api.Param;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;

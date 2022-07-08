@@ -1,4 +1,4 @@
-package art.arcane.edict.command;
+package art.arcane.edict.api;
 
 
 import java.lang.annotation.ElementType;
