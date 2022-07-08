@@ -3,6 +3,7 @@ package art.arcane.edict.virtual;
 import art.arcane.edict.Edict;
 import art.arcane.edict.testconstruct.TestCommandClass;
 import art.arcane.edict.testconstruct.TestUser;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -11,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class VClassTest {
 
-    VClass SUT = VClass.fromInstance(new TestCommandClass(), null, new Edict());
+    final VClass SUT = VClass.fromInstance(new TestCommandClass(), null, new Edict());
 
     @Test
     void fromClass() {
@@ -26,6 +27,7 @@ class VClassTest {
 
     @Test
     void sortAndFilterChildren() {
+        assert SUT != null;
         List<String> commandableBracket = SUT.indexer().search("[", SUT.system().settings().matchThreshold, (vCommandable -> new TestUser().hasPermission(vCommandable.permission())), SUT.system()).stream().map(VCommandable::name).toList();
         List<String> commandableMatch = SUT.indexer().search("command", SUT.system().settings().matchThreshold, (vCommandable -> new TestUser().hasPermission(vCommandable.permission())), SUT.system()).stream().map(VCommandable::name).toList();
         assertTrue(commandableBracket.isEmpty());
@@ -35,16 +37,13 @@ class VClassTest {
 
     @Test
     void name() {
+        assert SUT != null;
         assertEquals("test", SUT.name());
     }
 
     @Test
     void aliases() {
+        assert SUT != null;
         assertTrue(List.of(SUT.aliases()).contains("alias"));
-    }
-
-    @Test
-    void run() {
-        // Ran from EdictTest
     }
 }

@@ -7,14 +7,12 @@ import art.arcane.edict.util.EDictionary;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class EdictTest {
 
-    Edict SUT = new Edict(new TestCommandClass());
-    TestUser TESTUSER = new TestUser();
+    final Edict SUT = new Edict(new TestCommandClass());
+    final TestUser TESTUSER = new TestUser();
 
     @BeforeAll
     static void setup() {

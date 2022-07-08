@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ParameterHandlerTest {
 
-    ParameterHandler<?> SUT = new IntegerHandler();
+    final ParameterHandler<?> SUT = new IntegerHandler();
 
     @Test
     public void getMultiplier() {

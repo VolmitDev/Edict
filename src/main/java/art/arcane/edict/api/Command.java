@@ -44,6 +44,7 @@ public @interface Command {
      * If the commands functions MUST be run in sync, set this to true.
      * Defaults to {@code false}
      * @return True if the command must be run sync
+     * TODO: Make this work
      */
     boolean sync() default false;
 

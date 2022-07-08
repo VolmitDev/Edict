@@ -16,6 +16,6 @@ public class TestCommandClass implements Edicted {
 
     @Command(description = "test command 2")
     public void methodName() {
-
+        user().send(new StringMessage("Ran methodName"));
     }
 }

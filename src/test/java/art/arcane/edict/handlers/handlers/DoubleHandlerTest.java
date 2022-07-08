@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DoubleHandlerTest {
 
-    ParameterHandler<Double> SUT = new DoubleHandler();
+    final ParameterHandler<Double> SUT = new DoubleHandler();
 
     @Test
     void getPossibilities() {

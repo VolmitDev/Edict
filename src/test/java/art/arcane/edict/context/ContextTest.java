@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,9 +28,16 @@ class ContextTest {
 
     @Test
     void clean() throws InterruptedException {
-        Thread r = new Thread(() -> SUT.post(5));
+        ReentrantLock l = new ReentrantLock();
+        Thread r = new Thread(() -> {
+            l.lock();
+            SUT.post(5);
+            l.unlock();
+        });
         r.start();
-        while (r.isAlive()) {Thread.sleep(1);}
+        Thread.sleep(2);
+        l.lock();
+        l.unlock();
         assertEquals(5, SUT.context().get(r));
         SUT.clean();
         assertNull(SUT.context().get(r));
@@ -37,10 +45,17 @@ class ContextTest {
 
     @Test
     void getAndPost() throws InterruptedException {
+        ReentrantLock l = new ReentrantLock();
         SUT.post(5);
-        Thread r = new Thread(() -> SUT.post(6));
+        Thread r = new Thread(() -> {
+            l.lock();
+            SUT.post(6);
+            l.unlock();
+        });
         r.start();
-        while (r.isAlive()) {Thread.sleep(1);}
+        Thread.sleep(2);
+        l.lock();
+        l.unlock();
         assertEquals(5, SUT.get());
         assertEquals(6, SUT.context().get(r));
         SUT.post(1);
