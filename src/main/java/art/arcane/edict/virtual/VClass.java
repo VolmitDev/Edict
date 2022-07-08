@@ -27,23 +27,30 @@ import java.util.MissingResourceException;
  * @param permission permission node for this category
  * @param system the command system
  */
-public record VClass(@NotNull String name, @NotNull Command command, @NotNull Object instance, @NotNull List<VCommandable> children, @NotNull Permission permission, @NotNull Edict system) implements VCommandable {
+public record VClass(@NotNull String name, @NotNull Command command, @NotNull Object instance, @NotNull List<VCommandable> children, @Nullable VClass parent, @NotNull Permission permission, @NotNull Edict system) implements VCommandable {
 
     /**
      * Create a new category class.
      * This contains children: All methods of the clazz parameter that are annotated by @Command + any field declarations that are of a type that is annotated by @Command.
-     * Note, there is NO check for circular references, so make sure to prevent this yourself.
-     * TODO: Fix that
      * @param instance the class to create the edict from
      * @param parent the parent {@link VClass} ({@code null} if clazz is the root)
      * @param system the system
-     * @return a new category, or {@code null} if there are no commands in this category
+     * @return a new category, or {@code null} if there are no commands in this category or {@code null} if this would introduce a circular reference
      * @throws MissingResourceException if there is no @Command annotation on this class despite it being called as such
      */
     public static @Nullable VClass fromInstance(@NotNull Object instance, @Nullable VClass parent, @NotNull Edict system) throws MissingResourceException {
 
         // Class
         Class<?> clazz = instance.getClass();
+
+        // Circular reference check
+        VClass p = parent;
+        while (p != null) {
+            if (parent.instance.getClass().equals(clazz)) {
+                return null;
+            }
+            p = p.parent;
+        }
 
         // Check for annotation
         if (!clazz.isAnnotationPresent(Command.class)) {
@@ -57,6 +64,7 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
                 annotation,
                 instance,
                 new ArrayList<>(),
+                parent,
                 system.makePermission(parent == null ? null : parent.permission, annotation.permission()),
                 system
         );
