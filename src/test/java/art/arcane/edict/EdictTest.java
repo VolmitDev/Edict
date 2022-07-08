@@ -3,7 +3,11 @@ package art.arcane.edict;
 import art.arcane.edict.context.UserContext;
 import art.arcane.edict.testconstruct.TestCommandClass;
 import art.arcane.edict.testconstruct.TestUser;
+import art.arcane.edict.util.EDictionary;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -11,6 +15,11 @@ class EdictTest {
 
     Edict SUT = new Edict(new TestCommandClass());
     TestUser TESTUSER = new TestUser();
+
+    @BeforeAll
+    static void setup() throws IOException {
+        EDictionary.setup(null, EDictionary.defaultConfigFile);
+    }
 
     @Test
     void testMethod() {
@@ -23,7 +32,7 @@ class EdictTest {
     @Test
     void command() {
         try {
-            SUT.command("test command", TESTUSER);
+            SUT.command("test command", TESTUSER, true);
             assertTrue(TESTUSER.received.size() > 0);
             assertEquals("command ran", TESTUSER.received.get(TESTUSER.received.size() - 1).message());
         } catch (Exception e) {
