@@ -151,7 +151,7 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
      * @return a sorted list consisting of a subset of the children or {@code null} if none matched even slightly or had permission
      */
     public static @NotNull List<VCommandable> sortAndFilterChildren(@NotNull List<VCommandable> options, @NotNull String input, @NotNull User user, double threshold) {
-        // TODO: Cache?
+        // TODO: Cache? - Probably only if VCommandable::match is slow. It's threaded.
 
         // Get scores & max
         List<Integer> values = new ArrayList<>();
