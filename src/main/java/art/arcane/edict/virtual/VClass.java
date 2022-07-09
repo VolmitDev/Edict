@@ -181,8 +181,7 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
         List<VCommandable> children = indexer.search(
                 input.get(0),
                 system.settings().matchThreshold,
-                vCommandable -> user.hasPermission(vCommandable.permission()),
-                system
+                vCommandable -> user.hasPermission(vCommandable.permission())
         );
 
         // Send command further downstream

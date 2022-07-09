@@ -1,6 +1,5 @@
 package art.arcane.edict.util;
 
-import art.arcane.edict.Edict;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
 import art.arcane.edict.virtual.VCommandable;
@@ -121,10 +120,9 @@ public class BKTreeIndexer {
      * @param key the key
      * @param matchThreshold the percentage threshold
      * @param permissible function from a {@link VCommandable} to a boolean for whether the commandable can be run in current context
-     * @param system the system in which is being operated
      * @return the best matching commandable objects (all with the same match value)
      */
-    public @NotNull List<VCommandable> search(@NotNull String key, double matchThreshold, Function<VCommandable, Boolean> permissible, @NotNull Edict system) {
+    public @NotNull List<VCommandable> search(@NotNull String key, double matchThreshold, Function<VCommandable, Boolean> permissible) {
 
         // Retrieve matches from tree.
         Set<BkTreeSearcher.Match<? extends VCommandable>> matches = searcher.search(
@@ -162,11 +160,6 @@ public class BKTreeIndexer {
 
         @Override
         public @NotNull Permission permission() {
-            throw new NotImplementedException();
-        }
-
-        @Override
-        public @NotNull Edict system() {
             throw new NotImplementedException();
         }
 

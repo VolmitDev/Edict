@@ -3,7 +3,6 @@ package art.arcane.edict.virtual;
 import art.arcane.edict.Edict;
 import art.arcane.edict.testconstruct.TestCommandClass;
 import art.arcane.edict.testconstruct.TestUser;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -12,7 +11,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class VClassTest {
 
-    final VClass SUT = VClass.fromInstance(new TestCommandClass(), null, new Edict());
+    final Edict SYSTEM = new Edict();
+    final VClass SUT = VClass.fromInstance(new TestCommandClass(), null, SYSTEM);
 
     @Test
     void fromClass() {
@@ -28,8 +28,8 @@ class VClassTest {
     @Test
     void sortAndFilterChildren() {
         assert SUT != null;
-        List<String> commandableBracket = SUT.indexer().search("[", SUT.system().settings().matchThreshold, (vCommandable -> new TestUser().hasPermission(vCommandable.permission())), SUT.system()).stream().map(VCommandable::name).toList();
-        List<String> commandableMatch = SUT.indexer().search("command", SUT.system().settings().matchThreshold, (vCommandable -> new TestUser().hasPermission(vCommandable.permission())), SUT.system()).stream().map(VCommandable::name).toList();
+        List<String> commandableBracket = SUT.indexer().search("[", SYSTEM.settings().matchThreshold, (vCommandable -> new TestUser().hasPermission(vCommandable.permission()))).stream().map(VCommandable::name).toList();
+        List<String> commandableMatch = SUT.indexer().search("command", SYSTEM.settings().matchThreshold, (vCommandable -> new TestUser().hasPermission(vCommandable.permission()))).stream().map(VCommandable::name).toList();
         assertTrue(commandableBracket.isEmpty());
         assertEquals("command", commandableMatch.get(0));
         assertEquals(1, commandableMatch.size());

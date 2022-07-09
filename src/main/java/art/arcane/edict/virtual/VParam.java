@@ -20,9 +20,8 @@ import java.util.MissingResourceException;
  * Record for a virtual parameter.
  * @param param the parameter annotation
  * @param parameter the parameter itself
- * @param system the command system
  */
-public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNull ParameterHandler<?> handler, @Nullable ContextHandler<?> contextHandler, @NotNull Edict system) implements VCommandable {
+public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNull ParameterHandler<?> handler, @Nullable ContextHandler<?> contextHandler) implements VCommandable {
 
     /**
      * Create a list of parameters from a method.
@@ -44,8 +43,7 @@ public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNul
                     annotation,
                     parameter,
                     system.getParameterHandlerRegistry().getHandlerFor(parameter.getType()),
-                    annotation.contextual() ? system.getContextHandlerRegistry().getHandlerFor(parameter.getType()) : null,
-                    system));
+                    annotation.contextual() ? system.getContextHandlerRegistry().getHandlerFor(parameter.getType()) : null));
         }
         return params;
     }

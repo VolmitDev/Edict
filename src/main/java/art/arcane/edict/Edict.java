@@ -93,7 +93,7 @@ public class Edict {
     private final ContextHandlerRegistry contextHandlerRegistry;
 
     /**
-     * Completable commands registry.
+     * Completable commands' registry.
      */
     private final CompletableCommandsRegistry completableCommandsRegistry = new CompletableCommandsRegistry();
 
@@ -231,7 +231,7 @@ public class Edict {
             new UserContext().post(user);
             new SystemContext().post(this);
 
-            for (VCommandable root : indexer.search(input.get(0), settings().matchThreshold, (vCommandable -> user.hasPermission(vCommandable.permission())), this)) {
+            for (VCommandable root : indexer.search(input.get(0), settings().matchThreshold, (vCommandable -> user.hasPermission(vCommandable.permission())))) {
                 d(new StringMessage("Running root: " + root.getClass().getSimpleName()));
                 if (root.run(input.subList(1, input.size()), user)) {
                     return;

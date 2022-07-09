@@ -1,6 +1,5 @@
 package art.arcane.edict.virtual;
 
-import art.arcane.edict.Edict;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
 import org.jetbrains.annotations.NotNull;
@@ -38,12 +37,6 @@ public interface VCommandable {
      * @return the permission node of the commandable
      */
     @NotNull Permission permission();
-
-    /**
-     * The system of the commandable.
-     * @return the system of the commandable
-     */
-    @NotNull Edict system();
 
     /**
      * Run this commandable. It is assumed that this is in fact the right commandable, and that the user has permission.
