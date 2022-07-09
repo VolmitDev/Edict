@@ -1,4 +1,4 @@
-package art.arcane.edict.handlers;
+package art.arcane.edict.handler;
 
 import art.arcane.edict.user.User;
 

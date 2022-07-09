@@ -1,6 +1,6 @@
-package art.arcane.edict.handlers;
+package art.arcane.edict.handler;
 
-import art.arcane.edict.handlers.handlers.IntegerHandler;
+import art.arcane.edict.handler.handlers.IntegerHandler;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicReference;

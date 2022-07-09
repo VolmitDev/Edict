@@ -28,7 +28,7 @@ public class ParsingException extends Exception {
     private final @NotNull String reason;
 
     /**
-     * An exception thrown when a {@link art.arcane.edict.handlers.ParameterHandler} cannot parse the input.
+     * An exception thrown when a {@link art.arcane.edict.handler.ParameterHandler} cannot parse the input.
      * @param type the parameter type
      * @param name the name of the parameter
      * @param input the input string
@@ -39,7 +39,7 @@ public class ParsingException extends Exception {
     }
 
     /**
-     * An exception thrown when a {@link art.arcane.edict.handlers.ParameterHandler} cannot parse the input.
+     * An exception thrown when a {@link art.arcane.edict.handler.ParameterHandler} cannot parse the input.
      * @param type the parameter type
      * @param name the name of the parameter
      * @param input the input string

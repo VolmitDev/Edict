@@ -1,8 +1,8 @@
-package art.arcane.edict.handlers.handlers;
+package art.arcane.edict.handler.handlers;
 
 
 import art.arcane.edict.exception.ParsingException;
-import art.arcane.edict.handlers.ParameterHandler;
+import art.arcane.edict.handler.ParameterHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -14,8 +14,8 @@ public class BooleanHandler implements ParameterHandler<Boolean> {
     }
 
     @Override
-    public String toString(Boolean aByte) {
-        return aByte.toString();
+    public String toString(Boolean aBoolean) {
+        return aBoolean.toString();
     }
 
     @Override

@@ -1,4 +1,4 @@
-package art.arcane.edict.handlers;
+package art.arcane.edict.handler;
 
 import java.util.ArrayList;
 import java.util.List;
