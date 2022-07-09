@@ -25,13 +25,14 @@ public class ContextHandlerRegistry {
      * Get the handler for a certain type. No caching.
      * @param type the type to get the handler for
      * @return the requested handler or {@code null} if there is no associated handler registered
+     * @throws NullPointerException if no {@link ContextHandler} is registered for the {@code type}
      */
-    public ContextHandler<?> getHandlerFor(Class<?> type) {
+    public ContextHandler<?> getHandlerFor(Class<?> type) throws NullPointerException {
         for (ContextHandler<?> handler : handlers) {
             if (handler.supports(type)) {
                 return handler;
             }
         }
-        return null;
+        throw new NullPointerException("ContextHandler does not exist for type: " + type.getSimpleName());
     }
 }

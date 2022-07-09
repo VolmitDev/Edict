@@ -1,4 +1,4 @@
-package art.arcane.edict.handlers;
+package art.arcane.edict.handler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,7 +10,7 @@ import java.util.List;
 public class ParameterHandlerRegistry {
 
      /**
-      * The list of handlers registered
+      * The list of handlers registered.
       */
      private final List<ParameterHandler<?>> handlers = new ArrayList<>();
 
@@ -34,13 +34,14 @@ public class ParameterHandlerRegistry {
       * Get the handler for a certain type. No caching.
       * @param type the type to get the handler for
       * @return the requested handler or {@code null} if there is no associated handler registered
+      * @throws NullPointerException if no {@link ParameterHandler} is registered for the {@code type}
       */
-     public ParameterHandler<?> getHandlerFor(Class<?> type) {
+     public ParameterHandler<?> getHandlerFor(Class<?> type) throws NullPointerException {
           for (ParameterHandler<?> handler : handlers) {
                if (handler.supports(type)) {
                     return handler;
                }
           }
-          return null;
+          throw new NullPointerException();
      }
 }
