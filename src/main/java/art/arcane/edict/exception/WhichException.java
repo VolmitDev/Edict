@@ -1,6 +1,5 @@
 package art.arcane.edict.exception;
 
-import art.arcane.edict.handler.ParameterHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -17,33 +16,21 @@ public class WhichException extends Exception {
     private final @NotNull String input;
 
     /**
-     * The type of parameter for which this WhichException occurred.
-     */
-    private final @NotNull Class<?> type;
-
-    /**
      * List of options that the handler could not decide between.
      */
     private final @NotNull List<?> options;
-
-    /**
-     * The handler of the parameter type from which this issue originated.
-     */
-    private final @NotNull ParameterHandler<?> handler;
 
     /**
      * An exception thrown when the handler has to decide between multiple options, but they are equally good.
      * @param type the type of parameter to choose for
      * @param input the input string that lead to this issue
      * @param options the options the handler could not decide between
-     * @param handler the handler that raised this issue
      */
-    public WhichException(@NotNull Class<?> type, @NotNull String input, @NotNull List<?> options, @NotNull ParameterHandler<?> handler) {
+    @SuppressWarnings("unused")
+    public WhichException(@NotNull Class<?> type, @NotNull String input, @NotNull List<?> options) {
         super("Cannot parse \"" + input + "\" into type " + type.getSimpleName() + " because of multiple options");
-        this.type = type;
         this.input = input;
         this.options = options;
-        this.handler = handler;
     }
 
     /**
@@ -55,26 +42,10 @@ public class WhichException extends Exception {
     }
 
     /**
-     * Get the handler that could not decide on an option.
-     * @return the handler associated with this issue
-     */
-    public @NotNull ParameterHandler<?> getHandler() {
-        return handler;
-    }
-
-    /**
      * Get the input for which the WhichException occurred.
      * @return the input
      */
     public @NotNull String getInput() {
         return input;
-    }
-
-    /**
-     * Get the type for which the WhichException occurred.
-     * @return the type
-     */
-    public @NotNull Class<?> getType() {
-        return type;
     }
 }

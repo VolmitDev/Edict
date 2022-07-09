@@ -4,6 +4,7 @@ import art.arcane.edict.api.Edicted;
 import art.arcane.edict.api.Command;
 import art.arcane.edict.message.StringMessage;
 
+@SuppressWarnings("unused")
 @Command(name = "test", description = "a test class", aliases = "alias")
 public class TestCommandClass implements Edicted {
 

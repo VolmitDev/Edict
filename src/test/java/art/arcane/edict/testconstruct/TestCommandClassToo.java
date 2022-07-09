@@ -9,7 +9,7 @@ public class TestCommandClassToo implements Edicted {
 
     @Command(description = "a command named 'method'")
     public void method() {
-        system().d(new StringMessage("wowie, method ran!"));
+        system().d(new StringMessage("Wow, method ran!"));
     }
 
 }

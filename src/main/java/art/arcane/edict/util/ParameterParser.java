@@ -285,10 +285,10 @@ public class ParameterParser {
     private void parseContextual() {
         for (VParam param : new ArrayList<>(params)) {
             params.remove(param);
+            assert param.contextHandler() != null;
             values.put(
                     param,
-                    system.getContextHandlerRegistry()
-                            .getHandlerFor(param.parameter().getType()).handle(user)
+                    param.contextHandler().handle(user)
             );
         }
     }
@@ -370,7 +370,7 @@ public class ParameterParser {
             user.send(new StringMessage("Please pick a valid option."));
 
             for (int i = 0; i < values.size(); i++) {
-                // TODO: Hoverable clickable
+                // TODO: Hover-able clickable
                 user.send(new StringMessage(i + ") " + values.get(i)));
             }
 
