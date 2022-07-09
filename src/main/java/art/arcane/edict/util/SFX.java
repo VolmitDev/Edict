@@ -19,4 +19,12 @@ public enum SFX {
     SFX (String description) {
         this.description = description;
     }
+
+    /**
+     * Get the {@link #description}
+     * @return the {@link #description}
+     */
+    public String getDescription() {
+        return description;
+    }
 }
