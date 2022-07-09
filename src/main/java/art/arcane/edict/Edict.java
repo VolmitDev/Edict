@@ -3,7 +3,9 @@ package art.arcane.edict;
 import art.arcane.edict.completables.CompletableCommandsRegistry;
 import art.arcane.edict.context.SystemContext;
 import art.arcane.edict.context.UserContext;
+import art.arcane.edict.handler.ContextHandler;
 import art.arcane.edict.handler.ContextHandlers;
+import art.arcane.edict.handler.ParameterHandler;
 import art.arcane.edict.handler.ParameterHandlers;
 import art.arcane.edict.handler.handlers.*;
 import art.arcane.edict.message.Message;
@@ -14,8 +16,8 @@ import art.arcane.edict.user.User;
 import art.arcane.edict.util.BKTreeIndexer;
 import art.arcane.edict.util.EDictionary;
 import art.arcane.edict.util.ParameterParser;
+import art.arcane.edict.virtual.VClass;
 import art.arcane.edict.virtual.VCommandable;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Singular;
 import org.jetbrains.annotations.NotNull;
@@ -30,9 +32,65 @@ import java.util.function.Consumer;
  * The main System.
  * TODO: Colored text
  */
-@Builder(toBuilder = true)
-@AllArgsConstructor
+@SuppressWarnings("unused")
+@Builder
 public class Edict {
+
+    @Singular
+    private List<Object> roots;
+
+    public static class EdictBuilder {
+        public EdictBuilder parameterHandler(ParameterHandler<?> handler) {
+            parameterHandlers$value.add(handler);
+            return this;
+        }
+        public EdictBuilder contextHandler(ContextHandler<?> handler) {
+            contextHandlers$value.add(handler);
+            return this;
+        }
+    }
+
+    @Builder
+    public Edict(
+            @NotNull List<Object> roots,
+            @NotNull SystemUser systemUser,
+            @NotNull Consumer<Runnable> syncRunner,
+            @NotNull EDictionary settings,
+            @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory,
+            @NotNull ParameterHandlers parameterHandlers,
+            @NotNull ContextHandlers contextHandlers
+    ) {
+        this.roots = roots;
+        this.systemUser = systemUser;
+        this.syncRunner = syncRunner;
+        this.settings = settings;
+        this.permissionFactory = permissionFactory;
+        this.parameterHandlers = parameterHandlers;
+        this.contextHandlers = contextHandlers;
+
+        // System settings root
+        if (settings.settingsAsCommands) {
+            VClass vRoot = VClass.fromInstance(settings, null, this);
+            if (vRoot == null) {
+                w(new StringMessage("Could not register settings commands!"));
+            } else {
+                rootCommands.add(vRoot);
+            }
+        }
+
+        // Command Roots
+        for (Object root : roots) {
+            VClass vRoot = VClass.fromInstance(root, null, this);
+            if (vRoot == null) {
+                w(new StringMessage("Could not register root " + root.getClass().getSimpleName() + "!"));
+                continue;
+            }
+            rootCommands.add(vRoot);
+        }
+
+        // Indexer
+        indexer.addAll(rootCommands);
+    }
 
     /**
      * Root commands
@@ -53,25 +111,25 @@ public class Edict {
      * System user.
      */
     @Builder.Default
-    private final SystemUser systemUser = new SystemUser();
+    private SystemUser systemUser = new SystemUser();
 
     /**
      * Sync runner.
      */
     @Builder.Default
-    private final Consumer<Runnable> syncRunner = Runnable::run;
+    private Consumer<Runnable> syncRunner = Runnable::run;
 
     /**
      * Settings.
      */
     @Builder.Default
-    private final EDictionary settings = new EDictionary();
+    private EDictionary settings = new EDictionary();
 
     /**
      * Permission factory
      */
     @Builder.Default
-    private final BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory = (parent, s) -> new Permission() {
+    private BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory = (parent, s) -> new Permission() {
         @Override
         public Permission getParent() {
             return parent;
@@ -86,8 +144,8 @@ public class Edict {
     /**
      * Handler registry.
      */
-    @Singular
-    private final ParameterHandlers parameterHandlers = (ParameterHandlers) List.of(
+    @Builder.Default
+    private ParameterHandlers parameterHandlers = new ParameterHandlers(
             new BooleanHandler(),
             new ByteHandler(),
             new DoubleHandler(),
@@ -101,8 +159,8 @@ public class Edict {
     /**
      * Context handler registry.
      */
-    @Singular
-    private final ContextHandlers contextHandlers = new ContextHandlers();
+    @Builder.Default
+    private ContextHandlers contextHandlers = new ContextHandlers();
 
 
 //    /**

@@ -1,11 +1,20 @@
 package art.arcane.edict.handler;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Registry for type handlers.
  */
 public class ParameterHandlers extends ArrayList<ParameterHandler<?>> {
+
+     /**
+      * Initialize parameter handler with some handlers.
+      * @param handlers the handlers
+      */
+     public ParameterHandlers(ParameterHandler<?>... handlers) {
+          addAll(List.of(handlers));
+     }
 
      /**
       * Get the handler for a certain type. No caching.

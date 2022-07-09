@@ -1,11 +1,20 @@
 package art.arcane.edict.handler;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Registry for type context handlers.
  */
 public class ContextHandlers extends ArrayList<ContextHandler<?>> {
+
+    /**
+     * Initialize context handler with some handlers.
+     * @param handlers the handlers
+     */
+    public ContextHandlers(ContextHandler<?>... handlers) {
+        addAll(List.of(handlers));
+    }
 
     /**
      * Get the handler for a certain type. No caching.

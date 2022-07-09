@@ -13,13 +13,8 @@ class EdictTest {
 
     // TODO: Complex command tests
 
-    final Edict SUT = new Edict()
+    final Edict SUT = Edict.builder().build();
     final TestUser TESTUSER = new TestUser();
-
-    @BeforeAll
-    static void setup() {
-        EDictionary.set(null);
-    }
 
     @Test
     void testMethod() {

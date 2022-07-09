@@ -82,7 +82,7 @@ public class BKTreeIndexer {
     /**
      * Adapter for {@link #DAMERAU_LEVENSHTEIN_DISTANCE} for {@link VCommandable} constructs.
      */
-    private static final Metric<VCommandable> DLD_EDICT_ADAPTER = (input, vClass) -> {
+    private static final Metric<VCommandable> DLD_EDICT_ADAPTER = (vClass, input) -> {
 
         // Min distance (best)
         OptionalInt result = vClass.allNames().stream().mapToInt(name -> DAMERAU_LEVENSHTEIN_DISTANCE.distance(input.name(), name)).min();
@@ -122,7 +122,7 @@ public class BKTreeIndexer {
      * @param permissible function from a {@link VCommandable} to a boolean for whether the commandable can be run in current context
      * @return the best matching commandable objects (all with the same match value)
      */
-    public @NotNull List<VCommandable> search(@NotNull String key, double matchThreshold, Function<VCommandable, Boolean> permissible) {
+    public @NotNull List<VCommandable> search(@NotNull String key, double matchThreshold, @NotNull Function<VCommandable, Boolean> permissible) {
 
         // Retrieve matches from tree.
         Set<BkTreeSearcher.Match<? extends VCommandable>> matches = searcher.search(
