@@ -21,11 +21,4 @@ public interface ContextHandler<T> {
      */
     T handle(User user);
 
-    /**
-     * Use #handle to return the current string name
-     * @return The string name (or whatever) for this context's return
-     */
-    default String handleToString(User user) {
-        return handle(user).toString();
-    }
 }
