@@ -5,7 +5,6 @@ import art.arcane.edict.api.Command;
 import art.arcane.edict.api.Param;
 import art.arcane.edict.message.StringMessage;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -55,11 +54,6 @@ public class EDictionary implements Edicted {
         update("alwaysPickFirstOption", this.alwaysPickFirstOption, alwaysPickFirstOption, () -> this.alwaysPickFirstOption = alwaysPickFirstOption);
     }
 
-
-
-
-
-
     /**
      * Send an update to the user and system.
      * @param setting the name of the setting
@@ -68,47 +62,15 @@ public class EDictionary implements Edicted {
      * @param runUpdate to update the setting (with locking)
      */
     private void update(@NotNull String setting, @NotNull Object oldValue, @NotNull Object newValue, @NotNull Runnable runUpdate) {
-        LOCK.lock();
-        if (settings == null) {
-            settings = new EDictionary();
-        }
+        lock.lock();
         user().send(new StringMessage("Set " + setting + " from " + oldValue + " to " + newValue));
         system().i(new StringMessage(user().name() + " set " + setting + " from " + oldValue + " to " + newValue));
         runUpdate.run();
-        LOCK.unlock();
+        lock.unlock();
     }
 
     /**
-     * Settings lock.
+     * Lock for changing settings.
      */
-    private static final ReentrantLock LOCK = new ReentrantLock();
-
-    /**
-     * Singleton.
-     */
-    private static EDictionary settings;
-
-    /**
-     * Setup.
-     * @param settings settings that should be used. If {@code null} uses default settings.
-     */
-    public static void set(@Nullable EDictionary settings) {
-        LOCK.lock();
-        EDictionary.settings = settings == null ? new EDictionary() : settings;
-        LOCK.unlock();
-    }
-
-    /**
-     * Corrects for differences because of multithreaded between file and class in both directions
-     * @return the settings. If {@link #set(EDictionary)} was not called yet, it returns a fresh set of settings.
-     */
-    public static @NotNull EDictionary get() {
-
-        // Default settings until setup
-        if (settings == null) {
-            return new EDictionary();
-        }
-
-        return settings;
-    }
+    private final ReentrantLock lock = new ReentrantLock();
 }

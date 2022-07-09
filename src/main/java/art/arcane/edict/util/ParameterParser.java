@@ -300,7 +300,7 @@ public class ParameterParser {
         new HashMap<>(inputs).forEach((param, input) -> {
             inputs.remove(param);
             try {
-                values.put(param, system.getParameterHandlerRegistry().getHandlerFor(param.parameter().getType()).parse(input, param.name()));
+                values.put(param, system.getParameterHandlers().getHandlerFor(param.parameter().getType()).parse(input, param.name()));
             } catch (ParsingException e) {
                 badArgs.put(input, "Cannot parse this input to parameter " + param.name() + " of type " + param.parameter().getType().getSimpleName());
             } catch (WhichException e) {
@@ -351,7 +351,7 @@ public class ParameterParser {
      */
     private @Nullable Object pickValidOption(User user, List<?> options, VParam param) {
 
-        if (system.settings().alwaysPickFirstOption) {
+        if (system.getSettings().alwaysPickFirstOption) {
             return options.get(0);
         }
 
@@ -366,7 +366,7 @@ public class ParameterParser {
         int tries = 0;
         String result = null;
 
-        while (tries++ < system.settings().optionPickAttempts && (result == null || !options.contains(result))) {
+        while (tries++ < system.getSettings().optionPickAttempts && (result == null || !options.contains(result))) {
             user.send(new StringMessage("Please pick a valid option."));
 
             for (int i = 0; i < values.size(); i++) {

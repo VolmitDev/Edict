@@ -1,25 +1,11 @@
 package art.arcane.edict.handler;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Registry for type context handlers.
  */
-public class ContextHandlerRegistry {
-
-    /**
-     * The list of handlers registered
-     */
-    private final List<ContextHandler<?>> handlers = new ArrayList<>();
-
-    /**
-     * Register a new handler. Adding a new handler with the same type overwrites any existing handler.
-     * @param handler the handler to register
-     */
-    public void register(ContextHandler<?> handler) {
-        handlers.add(handler);
-    }
+public class ContextHandlers extends ArrayList<ContextHandler<?>> {
 
     /**
      * Get the handler for a certain type. No caching.
@@ -28,7 +14,7 @@ public class ContextHandlerRegistry {
      * @throws NullPointerException if no {@link ContextHandler} is registered for the {@code type}
      */
     public ContextHandler<?> getHandlerFor(Class<?> type) throws NullPointerException {
-        for (ContextHandler<?> handler : handlers) {
+        for (ContextHandler<?> handler : this) {
             if (handler.supports(type)) {
                 return handler;
             }

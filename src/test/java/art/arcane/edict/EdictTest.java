@@ -13,7 +13,7 @@ class EdictTest {
 
     // TODO: Complex command tests
 
-    final Edict SUT = new Edict(new TestCommandClass());
+    final Edict SUT = new Edict()
     final TestUser TESTUSER = new TestUser();
 
     @BeforeAll

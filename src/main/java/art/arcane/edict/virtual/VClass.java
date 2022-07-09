@@ -180,7 +180,7 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
         // Get children
         List<VCommandable> children = indexer.search(
                 input.get(0),
-                system.settings().matchThreshold,
+                system.getSettings().matchThreshold,
                 vCommandable -> user.hasPermission(vCommandable.permission())
         );
 

@@ -28,8 +28,8 @@ class VClassTest {
     @Test
     void sortAndFilterChildren() {
         assert SUT != null;
-        List<String> commandableBracket = SUT.indexer().search("[", SYSTEM.settings().matchThreshold, (vCommandable -> new TestUser().hasPermission(vCommandable.permission()))).stream().map(VCommandable::name).toList();
-        List<String> commandableMatch = SUT.indexer().search("command", SYSTEM.settings().matchThreshold, (vCommandable -> new TestUser().hasPermission(vCommandable.permission()))).stream().map(VCommandable::name).toList();
+        List<String> commandableBracket = SUT.indexer().search("[", SYSTEM.getSettings().matchThreshold, (vCommandable -> new TestUser().hasPermission(vCommandable.permission()))).stream().map(VCommandable::name).toList();
+        List<String> commandableMatch = SUT.indexer().search("command", SYSTEM.getSettings().matchThreshold, (vCommandable -> new TestUser().hasPermission(vCommandable.permission()))).stream().map(VCommandable::name).toList();
         assertTrue(commandableBracket.isEmpty());
         assertEquals("command", commandableMatch.get(0));
         assertEquals(1, commandableMatch.size());

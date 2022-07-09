@@ -40,7 +40,6 @@ public @interface Command {
      * It uses {@link Edict#runSync(Runnable)} to run these commands.
      * Defaults to {@code false}
      * @return True if the command must be run sync
-     * TODO: Sync running (+ tests)
      */
     boolean sync() default false;
 

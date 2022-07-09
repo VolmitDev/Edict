@@ -42,8 +42,8 @@ public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNul
             params.add(new VParam(
                     annotation,
                     parameter,
-                    system.getParameterHandlerRegistry().getHandlerFor(parameter.getType()),
-                    annotation.contextual() ? system.getContextHandlerRegistry().getHandlerFor(parameter.getType()) : null));
+                    system.getParameterHandlers().getHandlerFor(parameter.getType()),
+                    annotation.contextual() ? system.getContextHandlers().getHandlerFor(parameter.getType()) : null));
         }
         return params;
     }
