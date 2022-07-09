@@ -6,7 +6,6 @@ import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
 import art.arcane.edict.util.ParameterParser;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
@@ -44,9 +43,17 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
         }
         user.send(new StringMessage("Running command " + name() + " with input: " + String.join(", ", input)));
         try {
-            Object[] values = ParameterParser.parse(input, params, user, system);
+            ParameterParser parser = new ParameterParser(input, params, user, system);
+            Object[] values = parser.parse();
 
-            if (!VMethod.verifyParameters(values, method)){
+            if (values == null) {
+                for (VParam param : parser.getMissingInputs()) {
+                    // TODO: Print help to user
+                }
+                return true;
+            }
+
+            if (!verifyParameters(values, method)){
                 long l = System.currentTimeMillis();
                 user.send(new StringMessage("WARNING: System error, parameter value extraction failed. Please contact your admin with code: " + l));
                 system.w(new StringMessage("(Code + " + l + ") Parameter value extraction failed for " + parent().getClass() + "#" + method.getName() + " with input '" + String.join(" ", input) + "' -> " + Arrays.toString(values)));
