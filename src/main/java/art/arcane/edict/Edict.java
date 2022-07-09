@@ -109,6 +109,7 @@ public class Edict {
 
     /**
      * Create a new command system.<br>
+     * Use {@link #command(String, User)} to run commands with the system.
      * Uses default values:<br>
      *  - PermissionFactory: {@link #defaultPermissionFactory}<br>
      *  - EDictionary: settings, uses defaults of that class (by {@link EDictionary})<br>
@@ -116,16 +117,18 @@ public class Edict {
      *  - ParameterHandlers: {@link #defaultHandlers}<br>
      *  - ContextHandlers: {@code None}<br>
      *  - SyncRunner: {@link Runnable#run()}
-     * @throws NullPointerException if the {@link ParameterHandler} for any of the parameters of any methods of the {@code commandRoots} or any of its children is not registered
-     * or if the {@link ContextHandler} for any of the contextual parameter of any methods of the {@code commandRoots} or any of its children is not registered.
-     * If this is the case, use {@link #Edict(List, BiFunction, EDictionary, SystemUser, ParameterHandler[], ContextHandler[], Consumer)} instead.
+     * @throws NullPointerException <br>
+     * - If the {@link ParameterHandler} for any of the types of any parameter of any methods of the {@code commandRoots} or any of its children is not registered.<br>
+     * - If the {@link ContextHandler} for any contextual parameter of any methods of the {@code commandRoots} or any of its children is not registered.<br>
+     * > If this is the case, use {@link #Edict(List, BiFunction, EDictionary, SystemUser, ParameterHandler[], ContextHandler[], Consumer)} to register more handlers, or replace the parameter type.
      */
     public Edict(@NotNull Object... commandRoots) throws NullPointerException {
         this(List.of(commandRoots), defaultPermissionFactory, new EDictionary(), defaultSystemUser, defaultHandlers, new ContextHandler<?>[]{}, Runnable::run);
     }
 
     /**
-     * Create a new command system.
+     * Create a new command system.<br>
+     * Use {@link #command(String, User)} to run commands with the system.
      * @param commandRoots the roots of the commands
      * @param permissionFactory factory to create permissions
      * @param settings settings
