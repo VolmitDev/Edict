@@ -1,5 +1,7 @@
 package art.arcane.edict.virtual;
 
+import art.arcane.edict.handler.ContextHandler;
+import art.arcane.edict.handler.ParameterHandler;
 import art.arcane.edict.util.BKTreeIndexer;
 import art.arcane.edict.Edict;
 import art.arcane.edict.api.Command;
@@ -36,8 +38,10 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
      * @param system the system
      * @return a new category, or {@code null} if there are no commands in this category or {@code null} if this would introduce a circular reference
      * @throws MissingResourceException if there is no @Command annotation on this class despite it being called as such
+     * @throws NullPointerException if the {@link ParameterHandler} for any of the parameters of any methods of this class or any of its children is not registered
+     * or if the {@link ContextHandler} for any of the contextual parameter of any methods of the {@code commandRoots} or any of its children is not registered
      */
-    public static @Nullable VClass fromInstance(@NotNull Object instance, @Nullable VClass parent, @NotNull Edict system) throws MissingResourceException {
+    public static @Nullable VClass fromInstance(@NotNull Object instance, @Nullable VClass parent, @NotNull Edict system) throws MissingResourceException, NullPointerException {
 
         // Class
         Class<?> clazz = instance.getClass();

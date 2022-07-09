@@ -2,11 +2,11 @@ package art.arcane.edict;
 
 import art.arcane.edict.context.SystemContext;
 import art.arcane.edict.context.UserContext;
-import art.arcane.edict.handlers.ContextHandler;
-import art.arcane.edict.handlers.ContextHandlerRegistry;
-import art.arcane.edict.handlers.ParameterHandlerRegistry;
-import art.arcane.edict.handlers.ParameterHandler;
-import art.arcane.edict.handlers.handlers.*;
+import art.arcane.edict.handler.ContextHandler;
+import art.arcane.edict.handler.ContextHandlerRegistry;
+import art.arcane.edict.handler.ParameterHandlerRegistry;
+import art.arcane.edict.handler.ParameterHandler;
+import art.arcane.edict.handler.handlers.*;
 import art.arcane.edict.message.Message;
 import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.permission.Permission;
@@ -14,6 +14,7 @@ import art.arcane.edict.user.SystemUser;
 import art.arcane.edict.user.User;
 import art.arcane.edict.util.BKTreeIndexer;
 import art.arcane.edict.util.EDictionary;
+import art.arcane.edict.util.ParameterParser;
 import art.arcane.edict.virtual.VCommandable;
 import art.arcane.edict.virtual.VClass;
 import org.jetbrains.annotations.NotNull;
@@ -102,7 +103,8 @@ public class Edict {
      *  - SystemUser: {@link SystemUser} (Using System.out.)<br>
      *  - ParameterHandlers: {@link #defaultHandlers}<br>
      *  - ContextHandlers: {@code None}
-     * @throws NullPointerException if one of the registered roots (or their children) has a parameter of a type that has no {@link ParameterHandler} registered.
+     * @throws NullPointerException if the {@link ParameterHandler} for any of the parameters of any methods of the {@code commandRoots} or any of its children is not registered
+     * or if the {@link ContextHandler} for any of the contextual parameter of any methods of the {@code commandRoots} or any of its children is not registered.
      * If this is the case, use {@link #Edict(List, BiFunction, EDictionary, SystemUser, ParameterHandler[], ContextHandler[])} instead.
      */
     public Edict(@NotNull Object... commandRoots) throws NullPointerException {
@@ -117,6 +119,8 @@ public class Edict {
      * @param systemUser the user to output system messages to.
      * @param parameterHandlers the handlers you wish to register.
      * @param contextHandlers the context handlers you wish to register.
+     * @throws NullPointerException if the {@link ParameterHandler} for any of the parameters of any methods of the {@code commandRoots} or any of its children is not registered
+     * or if the {@link ContextHandler} for any of the contextual parameter of any methods of the {@code commandRoots} or any of its children is not registered
      */
     public Edict(@NotNull List<Object> commandRoots, @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @NotNull EDictionary settings, @NotNull SystemUser systemUser, @NotNull ParameterHandler<?>[] parameterHandlers, @NotNull ContextHandler<?>[] contextHandlers) throws NullPointerException {
 
@@ -188,7 +192,7 @@ public class Edict {
      */
     public void command(@NotNull String command, @NotNull User user, boolean forceSync) {
         Runnable r = () -> {
-            final String fCommand = cleanCommand(command);
+            final String fCommand = ParameterParser.cleanCommand(command);
 
             i(new StringMessage(user.name() + " sent command: " + fCommand));
 
@@ -228,25 +232,6 @@ public class Edict {
     }
 
     /**
-     * Clean the input command.
-     * Performs the following actions:<br>
-     *  - Remove all double spaces<br>
-     *  - Remove spaces before equal signs
-     * @param command the input command
-     * @return the cleaned command
-     */
-    public @NotNull String cleanCommand(@NotNull String command) {
-        command = command.strip();
-        while (command.contains("  ")) {
-            command = command.replace("  ", " ");
-        }
-        while (command.contains("  ")) {
-            command = command.replace("==", "=");
-        }
-        return command.replace(" =", "=");
-    }
-
-    /**
      * Make a {@link Permission} node.
      * @param input the input to make the node
      */
@@ -281,5 +266,21 @@ public class Edict {
      */
     public EDictionary settings() {
         return EDictionary.get();
+    }
+
+    /**
+     * Get the {@link ParameterHandlerRegistry}.
+     * @return the {@link ParameterHandlerRegistry}
+     */
+    public ParameterHandlerRegistry getParameterHandlerRegistry() {
+        return parameterHandlerRegistry;
+    }
+
+    /**
+     * Get the {@link ContextHandlerRegistry}.
+     * @return the {@link ContextHandlerRegistry}
+     */
+    public ContextHandlerRegistry getContextHandlerRegistry() {
+        return contextHandlerRegistry;
     }
 }
