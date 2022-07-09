@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Registry for commands that need to be completed.
+ * TODO: Feed back data into here
  */
 public class CompletableCommandsRegistry {
 

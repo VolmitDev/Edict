@@ -2,6 +2,7 @@ package art.arcane.edict.user;
 
 import art.arcane.edict.message.Message;
 import art.arcane.edict.permission.Permission;
+import art.arcane.edict.util.SFX;
 
 /**
  * A user of the command system.
@@ -39,4 +40,10 @@ public interface User {
     default boolean hasPermission(Permission permission) {
         return true;
     }
+
+    /**
+     * Play a sound effect to the user.
+     * @param effect the sound effect
+     */
+    default void playSFX(SFX effect) {}
 }
