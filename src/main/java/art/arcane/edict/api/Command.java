@@ -1,6 +1,8 @@
 package art.arcane.edict.api;
 
 
+import art.arcane.edict.Edict;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -34,14 +36,8 @@ public @interface Command {
     String[] aliases() default "";
 
     /**
-     * Whether this command can use senders' context to derive (optional) parameter values.
-     * Defaults to {@code false}
-     * @return True if context can be used
-     */
-    boolean contextual() default false;
-
-    /**
      * If the commands functions MUST be run in sync, set this to true.
+     * It uses {@link Edict#runSync(Runnable)} to run these commands.
      * Defaults to {@code false}
      * @return True if the command must be run sync
      * TODO: Sync running (+ tests)
