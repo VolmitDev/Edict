@@ -30,7 +30,7 @@ public class CompletableCommandsRegistry {
      * @param user the user to get the completable command for
      * @return the requested completable command or {@code null} if there is no completable command registered for the specified {@code user}
      */
-    public CompletableFuture<?> getHandlerFor(User user) throws NullPointerException {
+    public CompletableFuture<?> getCompletableFor(User user) throws NullPointerException {
         return commands.get(user);
     }
 }
