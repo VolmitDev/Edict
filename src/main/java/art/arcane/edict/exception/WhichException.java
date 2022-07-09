@@ -1,6 +1,6 @@
 package art.arcane.edict.exception;
 
-import art.arcane.edict.handlers.ParameterHandler;
+import art.arcane.edict.handler.ParameterHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

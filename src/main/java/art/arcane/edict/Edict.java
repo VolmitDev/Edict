@@ -102,8 +102,10 @@ public class Edict {
      *  - SystemUser: {@link SystemUser} (Using System.out.)<br>
      *  - ParameterHandlers: {@link #defaultHandlers}<br>
      *  - ContextHandlers: {@code None}
+     * @throws NullPointerException if one of the registered roots (or their children) has a parameter of a type that has no {@link ParameterHandler} registered.
+     * If this is the case, use {@link #Edict(List, BiFunction, EDictionary, SystemUser, ParameterHandler[], ContextHandler[])} instead.
      */
-    public Edict(@NotNull Object... commandRoots) {
+    public Edict(@NotNull Object... commandRoots) throws NullPointerException {
         this(List.of(commandRoots), defaultPermissionFactory, new EDictionary(), defaultSystemUser, defaultHandlers, new ContextHandler<?>[]{});
     }
 
@@ -116,7 +118,7 @@ public class Edict {
      * @param parameterHandlers the handlers you wish to register.
      * @param contextHandlers the context handlers you wish to register.
      */
-    public Edict(@NotNull List<Object> commandRoots, @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @NotNull EDictionary settings, @NotNull SystemUser systemUser, @NotNull ParameterHandler<?>[] parameterHandlers, @NotNull ContextHandler<?>[] contextHandlers) {
+    public Edict(@NotNull List<Object> commandRoots, @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @NotNull EDictionary settings, @NotNull SystemUser systemUser, @NotNull ParameterHandler<?>[] parameterHandlers, @NotNull ContextHandler<?>[] contextHandlers) throws NullPointerException {
 
         // System
         this.systemUser = systemUser;
@@ -237,6 +239,9 @@ public class Edict {
         command = command.strip();
         while (command.contains("  ")) {
             command = command.replace("  ", " ");
+        }
+        while (command.contains("  ")) {
+            command = command.replace("==", "=");
         }
         return command.replace(" =", "=");
     }

@@ -5,6 +5,8 @@ import art.arcane.edict.api.Command;
 import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
+import art.arcane.edict.util.ParameterParser;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
@@ -42,7 +44,14 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
         }
         user.send(new StringMessage("Running command " + name() + " with input: " + String.join(", ", input)));
         try {
-            // TODO: Parameter functionality
+            Object[] values = ParameterParser.parse(input, params, user, system);
+
+            if (!VMethod.verifyParameters(values, method)){
+                long l = System.currentTimeMillis();
+                user.send(new StringMessage("WARNING: System error, parameter value extraction failed. Please contact your admin with code: " + l));
+                system.w(new StringMessage("(Code + " + l + ") Parameter value extraction failed for " + parent().getClass() + "#" + method.getName() + " with input '" + String.join(" ", input) + "' -> " + Arrays.toString(values)));
+            }
+
             method.invoke(parent.instance());
             return true;
         } catch (IllegalAccessException | InvocationTargetException e) {
@@ -53,6 +62,25 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
             system.w(new StringMessage("This is MOST likely an issue with Edict. Please contact us with the method (and class) and command that was ran."));
         }
         return false;
+    }
+
+    /**
+     * Verify that the generated parameters for a method are correct.
+     * @param parameterValues the generated parameter values
+     * @param method the method
+     * @return true if the parameter values are valid for the method, false if not
+     */
+    private static boolean verifyParameters(@NotNull Object[] parameterValues, @NotNull Method method) {
+        for (int i = 0; i < method.getParameters().length; i++) {
+            if (parameterValues[i] == null) {
+                continue;
+            }
+
+            if (parameterValues[i].getClass() != method.getParameters()[i].getType()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
