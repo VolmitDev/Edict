@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Record of a command, representing the final node in the tree of commands.
@@ -42,33 +43,54 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
             return true;
         }
         user.send(new StringMessage("Running command " + name() + " with input: " + String.join(", ", input)));
-        try {
-            ParameterParser parser = new ParameterParser(input, params, user, system);
-            Object[] values = parser.parse();
+        ParameterParser parser = new ParameterParser(input, params, user, system);
+        Object[] values = parser.parse();
 
-            if (values == null) {
-                for (VParam param : parser.getMissingInputs()) {
-                    // TODO: Print help to user
-                }
-                return true;
+        if (!parser.getBadArgsAndReasons().isEmpty()) {
+            user.send(new StringMessage("Some of your inputs were bad & ignored:"));
+            for (String argAndReason : parser.getBadArgsAndReasons()) {
+                user.send(new StringMessage(" - " + argAndReason));
             }
-
-            if (!verifyParameters(values, method)){
-                long l = System.currentTimeMillis();
-                user.send(new StringMessage("WARNING: System error, parameter value extraction failed. Please contact your admin with code: " + l));
-                system.w(new StringMessage("(Code + " + l + ") Parameter value extraction failed for " + parent().getClass() + "#" + method.getName() + " with input '" + String.join(" ", input) + "' -> " + Arrays.toString(values)));
-            }
-
-            method.invoke(parent.instance());
-            return true;
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            long l = System.currentTimeMillis();
-            user.send(new StringMessage("WARNING: System error, please contact your admin. Code: " + l));
-            system.w(new StringMessage("(Code: " + l + ") Failed to invoke " + method.getName() + " on " + parent.getClass().getSimpleName() + " due to " + e));
-            system.w(new StringMessage(Arrays.toString(e.getStackTrace())));
-            system.w(new StringMessage("This is MOST likely an issue with Edict. Please contact us with the method (and class) and command that was ran."));
         }
-        return false;
+
+        if (values == null) {
+            user.send(new StringMessage("Some parameters did not get a value:"));
+            for (VParam param : parser.getMissingInputs()) {
+                user.send(new StringMessage(" - " + param.name() + " (" + param.parameter().getType().getSimpleName() + ")"));
+            }
+            user.send(new StringMessage("Please try running the command again after fixing the parameters"));
+            return true;
+        }
+
+        if (!verifyParameters(values, method)){
+            long l = System.currentTimeMillis();
+            user.send(new StringMessage("WARNING: System error, parameter value extraction failed. Please contact your admin with code: " + l));
+            system.w(new StringMessage("(Code + " + l + ") Parameter value extraction failed for " + parent().getClass() + "#" + method.getName() + " with input '" + String.join(" ", input) + "' -> " + Arrays.toString(values)));
+        }
+
+        AtomicBoolean success = new AtomicBoolean(true);
+
+        Runnable executor = () -> {
+            try {
+                method.invoke(parent.instance());
+                success.set(true);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                long l = System.currentTimeMillis();
+                user.send(new StringMessage("WARNING: System error, please contact your admin. Code: " + l));
+                system.w(new StringMessage("(Code: " + l + ") Failed to invoke " + method.getName() + " on " + parent.getClass().getSimpleName() + " due to " + e));
+                system.w(new StringMessage(Arrays.toString(e.getStackTrace())));
+                system.w(new StringMessage("This is MOST likely an issue with Edict. Please contact us with the method (and class) and command that was ran."));
+                success.set(false);
+            }
+        };
+
+        if (command().sync()) {
+            system.runSync(executor);
+        } else {
+            executor.run();
+        }
+
+        return success.get();
     }
 
     /**
