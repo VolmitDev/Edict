@@ -45,6 +45,16 @@ public class EDictionary implements Edicted {
         update("optionPickAttempts", this.optionPickAttempts, optionPickAttempts, () -> this.optionPickAttempts = optionPickAttempts);
     }
 
+    /**
+     * Whether to always pick the first option or not, if multiple are possible when running a command.
+     */
+    public boolean alwaysPickFirstOption;
+
+    @Command(description = "Set whether to always pick the first option or not, if multiple are possible when running a command.")
+    public void setAlwaysPickFirstOption(boolean alwaysPickFirstOption) {
+        update("alwaysPickFirstOption", this.alwaysPickFirstOption, alwaysPickFirstOption, () -> this.alwaysPickFirstOption = alwaysPickFirstOption);
+    }
+
 
 
 
