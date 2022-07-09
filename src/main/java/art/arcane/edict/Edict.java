@@ -1,5 +1,6 @@
 package art.arcane.edict;
 
+import art.arcane.edict.api.Command;
 import art.arcane.edict.completables.CompletableCommandsRegistry;
 import art.arcane.edict.context.SystemContext;
 import art.arcane.edict.context.UserContext;
@@ -24,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 /**
  * The main System.
@@ -100,6 +102,10 @@ public class Edict {
      */
     private final SystemUser systemUser;
 
+    /**
+     * Sync runner.
+     */
+    private final Consumer<Runnable> syncRunner;
 
     /**
      * Create a new command system.<br>
@@ -108,33 +114,38 @@ public class Edict {
      *  - EDictionary: settings, uses defaults of that class (by {@link EDictionary})<br>
      *  - SystemUser: {@link SystemUser} (Using System.out.)<br>
      *  - ParameterHandlers: {@link #defaultHandlers}<br>
-     *  - ContextHandlers: {@code None}
+     *  - ContextHandlers: {@code None}<br>
+     *  - SyncRunner: {@link Runnable#run()}
      * @throws NullPointerException if the {@link ParameterHandler} for any of the parameters of any methods of the {@code commandRoots} or any of its children is not registered
      * or if the {@link ContextHandler} for any of the contextual parameter of any methods of the {@code commandRoots} or any of its children is not registered.
-     * If this is the case, use {@link #Edict(List, BiFunction, EDictionary, SystemUser, ParameterHandler[], ContextHandler[])} instead.
+     * If this is the case, use {@link #Edict(List, BiFunction, EDictionary, SystemUser, ParameterHandler[], ContextHandler[], Consumer)} instead.
      */
     public Edict(@NotNull Object... commandRoots) throws NullPointerException {
-        this(List.of(commandRoots), defaultPermissionFactory, new EDictionary(), defaultSystemUser, defaultHandlers, new ContextHandler<?>[]{});
+        this(List.of(commandRoots), defaultPermissionFactory, new EDictionary(), defaultSystemUser, defaultHandlers, new ContextHandler<?>[]{}, Runnable::run);
     }
 
     /**
      * Create a new command system.
-     * @param commandRoots the roots of the commands.
-     * @param permissionFactory factory to create permissions.
-     * @param settings settings.
-     * @param systemUser the user to output system messages to.
-     * @param parameterHandlers the handlers you wish to register.
-     * @param contextHandlers the context handlers you wish to register.
+     * @param commandRoots the roots of the commands
+     * @param permissionFactory factory to create permissions
+     * @param settings settings
+     * @param systemUser the user to output system messages to
+     * @param parameterHandlers the handlers you wish to register
+     * @param contextHandlers the context handlers you wish to register
+     * @param syncRunner consumer of runnable, called for {@link art.arcane.edict.api.Command}s that have {@link Command#sync()} true
      * @throws NullPointerException if the {@link ParameterHandler} for any of the parameters of any methods of the {@code commandRoots} or any of its children is not registered
      * or if the {@link ContextHandler} for any of the contextual parameter of any methods of the {@code commandRoots} or any of its children is not registered
      */
-    public Edict(@NotNull List<Object> commandRoots, @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @NotNull EDictionary settings, @NotNull SystemUser systemUser, @NotNull ParameterHandler<?>[] parameterHandlers, @NotNull ContextHandler<?>[] contextHandlers) throws NullPointerException {
+    public Edict(@NotNull List<Object> commandRoots, @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @NotNull EDictionary settings, @NotNull SystemUser systemUser, @NotNull ParameterHandler<?>[] parameterHandlers, @NotNull ContextHandler<?>[] contextHandlers, @NotNull Consumer<Runnable> syncRunner) throws NullPointerException {
 
         // System
         this.systemUser = systemUser;
 
         // Permission factory
         this.permissionFactory = permissionFactory;
+
+        // Sync runner
+        this.syncRunner = syncRunner;
 
         // Settings
         EDictionary.set(settings);
@@ -296,5 +307,13 @@ public class Edict {
      */
     public CompletableCommandsRegistry getCompletableCommandsRegistry() {
         return completableCommandsRegistry;
+    }
+
+    /**
+     * Run a runnable in sync, using the {@link #syncRunner}.
+     * @param runnable the runnable to run
+     */
+    public void runSync(Runnable runnable) {
+        syncRunner.accept(runnable);
     }
 }
