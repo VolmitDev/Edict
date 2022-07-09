@@ -128,7 +128,7 @@ public class BKTreeIndexer {
 
         // Retrieve matches from tree.
         Set<BkTreeSearcher.Match<? extends VCommandable>> matches = searcher.search(
-                new BKTreeIndexable(key, system),
+                new BKTreeIndexable(key),
                 (int) (key.length() * matchThreshold)
         );
 
@@ -147,9 +147,8 @@ public class BKTreeIndexer {
     /**
      * Placeholder class for a VCommandable
      * @param name the name of the search input
-     * @param system the name of the system
      */
-    private record BKTreeIndexable(@NotNull String name, @NotNull Edict system) implements VCommandable {
+    private record BKTreeIndexable(@NotNull String name) implements VCommandable {
 
         @Override
         public @NotNull String name() {
