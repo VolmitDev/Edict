@@ -35,6 +35,16 @@ public class EDictionary implements Edicted {
         update("settingsAsCommands", this.settingsAsCommands, settingsAsCommands, () -> this.settingsAsCommands = settingsAsCommands);
     }
 
+    /**
+     * The number of attempts a user gets to pick the correct input for an ambiguous parameter input.
+     */
+    public int optionPickAttempts = 3;
+
+    @Command(description = "Set the number of attempts a user gets to pick the correct input for an ambiguous parameter input.")
+    public void setOptionPickAttempts(int optionPickAttempts) {
+        update("optionPickAttempts", this.optionPickAttempts, optionPickAttempts, () -> this.optionPickAttempts = optionPickAttempts);
+    }
+
 
 
 
