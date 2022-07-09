@@ -16,45 +16,45 @@ public interface ParameterHandler<T> {
 
     /**
      * Return a random value that may be entered
-     * @return A random default value
+     * @return a random default value
      */
     String getRandomDefault();
 
     /**
      * Returns whether a certain type is supported by this handler<br>
      *
-     * @param type The type to check
-     * @return True if supported, false if not
+     * @param type the type to check
+     * @return true if supported, false if not
      */
     boolean supports(Class<?> type);
 
     /**
      * Converting the type back to a string (inverse of the {@link #parse(String, String) parse} method)
      *
-     * @param t The input of the designated type to convert to a String
-     * @return The resulting string
+     * @param t the input of the designated type to convert to a String
+     * @return the resulting string
      */
     String toString(T t);
 
     /**
      * Should parse a String into the designated type
-     * @param in The string to parse
-     * @param force Force an option instead of throwing a {@link WhichException} if possible (can allow it throwing!)
-     * @param parameterName The name of the parameter that is being parsed (only use this to create {@link ParsingException}s and {@link WhichException}s).
-     * @return The value extracted from the string, of the designated type
-     * @throws ParsingException Thrown when the parsing fails (ex: "oop" translated to an integer throws this)
-     * @throws WhichException   Thrown when multiple results are possible
+     * @param in the string to parse
+     * @param force force an option instead of throwing a {@link WhichException} if possible (can allow it throwing!)
+     * @param parameterName the name of the parameter that is being parsed (only use this to create {@link ParsingException}s and {@link WhichException}s).
+     * @return the value extracted from the string, of the designated type
+     * @throws ParsingException thrown when the parsing fails (ex: "oop" translated to an integer throws this)
+     * @throws WhichException thrown when multiple results are possible
      */
     @SuppressWarnings("RedundantThrows")
     T parse(String in, boolean force, String parameterName) throws ParsingException, WhichException;
 
     /**
      * Parse an input string to an output of the assigned type
-     * @param in The input string
-     * @param parameterName The name of the parameter that is being parsed (only use this to create {@link ParsingException}s and {@link WhichException}s).
-     * @return The output type
-     * @throws ParsingException When the input cannot be parsed into the output
-     * @throws WhichException Multiple outputs would be possible for the same input
+     * @param in the input string
+     * @param parameterName the name of the parameter that is being parsed (only use this to create {@link ParsingException}s and {@link WhichException}s).
+     * @return the output type
+     * @throws ParsingException when the input cannot be parsed into the output
+     * @throws WhichException multiple outputs would be possible for the same input
      */
     default T parse(String in, String parameterName) throws ParsingException, WhichException {
         return parse(in, false, parameterName);
@@ -63,15 +63,15 @@ public interface ParameterHandler<T> {
     /**
      * Should return the possible values for this type
      *
-     * @return Possibilities for this type.
+     * @return possibilities for this type.
      */
     List<T> getPossibilities();
 
     /**
      * The possible entries for the inputted string (support for autocomplete on partial entries)
      *
-     * @param input The inputted string to check against
-     * @return A {@link List} of possibilities
+     * @param input the inputted string to check against
+     * @return a {@link List} of possibilities
      */
     default List<T> getPossibilities(@NotNull String input) {
         if (input.trim().isEmpty()) {
@@ -113,8 +113,8 @@ public interface ParameterHandler<T> {
     /**
      * Forces conversion to the designated type before converting to a string using {@link #toString(T t)}
      *
-     * @param t The object to convert to string (that should be of this type)
-     * @return The resulting string.
+     * @param t the object to convert to string (that should be of this type)
+     * @return the resulting string.
      */
     @SuppressWarnings("unchecked")
     default String toStringForce(Object t) {
@@ -130,8 +130,8 @@ public interface ParameterHandler<T> {
      * - h > 100<br>
      * - c > 16<br>
      * ! This does not return the actual value, just the multiplier!
-     * @param value The inputted value
-     * @return The multiplier
+     * @param value the input string
+     * @return the multiplier
      */
     default int getMultiplier(@NotNull AtomicReference<String> value) {
         int multiplier = 1;
