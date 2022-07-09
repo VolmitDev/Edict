@@ -1,5 +1,6 @@
 package art.arcane.edict;
 
+import art.arcane.edict.completables.CompletableCommandsRegistry;
 import art.arcane.edict.context.SystemContext;
 import art.arcane.edict.context.UserContext;
 import art.arcane.edict.handler.ContextHandler;
@@ -88,6 +89,11 @@ public class Edict {
      * Context handler registry.
      */
     private final ContextHandlerRegistry contextHandlerRegistry;
+
+    /**
+     * Completable commands registry.
+     */
+    private final CompletableCommandsRegistry completableCommandsRegistry = new CompletableCommandsRegistry();
 
     /**
      * System user.
@@ -282,5 +288,13 @@ public class Edict {
      */
     public ContextHandlerRegistry getContextHandlerRegistry() {
         return contextHandlerRegistry;
+    }
+
+    /**
+     * Get the {@link CompletableCommandsRegistry}.
+     * @return the {@link CompletableCommandsRegistry}
+     */
+    public CompletableCommandsRegistry getCompletableCommandsRegistry() {
+        return completableCommandsRegistry;
     }
 }
