@@ -8,6 +8,7 @@ import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -21,7 +22,7 @@ import java.util.MissingResourceException;
  * @param parameter the parameter itself
  * @param system the command system
  */
-public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNull ParameterHandler<?> handler, @NotNull Edict system) implements VCommandable {
+public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNull ParameterHandler<?> handler, @Nullable ContextHandler<?> contextHandler, @NotNull Edict system) implements VCommandable {
 
     /**
      * Create a list of parameters from a method.
@@ -38,7 +39,13 @@ public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNul
             if (!parameter.isAnnotationPresent(Param.class)) {
                 throw new MissingResourceException("@Param annotation missing on provided parameter", parameter.getClass().getSimpleName(), "@Param");
             }
-            params.add(new VParam(parameter.getDeclaredAnnotation(Param.class), parameter, system.getParameterHandlerRegistry().getHandlerFor(parameter.getType()), system));
+            Param annotation = parameter.getDeclaredAnnotation(Param.class);
+            params.add(new VParam(
+                    annotation,
+                    parameter,
+                    system.getParameterHandlerRegistry().getHandlerFor(parameter.getType()),
+                    annotation.contextual() ? system.getContextHandlerRegistry().getHandlerFor(parameter.getType()) : null,
+                    system));
         }
         return params;
     }
