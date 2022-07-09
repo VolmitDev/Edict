@@ -158,22 +158,22 @@ public class BKTreeIndexer {
 
         @Override
         public @NotNull String[] aliases() {
-            return new String[0];
+            throw new NotImplementedException();
         }
 
         @Override
         public @NotNull Permission permission() {
-            return () -> null;
+            throw new NotImplementedException();
         }
 
         @Override
         public @NotNull Edict system() {
-            return system;
+            throw new NotImplementedException();
         }
 
         @Override
         public boolean run(@NotNull List<String> input, @NotNull User user) {
-            throw new NotImplementedException("Cannot run BKTreeIndexer.BKTreeIndexable");
+            throw new NotImplementedException();
         }
     }
 }
