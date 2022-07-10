@@ -1,8 +1,7 @@
 package art.arcane.edict;
 
 import art.arcane.edict.context.UserContext;
-import art.arcane.edict.testconstruct.TestCommandClass;
-import art.arcane.edict.testconstruct.TestUser;
+import art.arcane.edict.testconstruct.*;
 import art.arcane.edict.util.EDictionary;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -13,8 +12,11 @@ class EdictTest {
 
     // TODO: Complex command tests
 
-    final Edict SUT = Edict.builder(null).build();
-    final TestUser TESTUSER = new TestUser();
+    final Edict SUT = Edict.builder(new TestCommandClass(), new TestCommandClassContext())
+            .contextHandler(new TestContextValueContextHandler())
+            .parameterHandler(new TestContextValueParameterHandler())
+            .build();
+    final TestUser TESTUSER = new TestContextUser();
 
     @Test
     void testMethod() {
@@ -26,12 +28,15 @@ class EdictTest {
 
     @Test
     void command() {
-        try {
-            SUT.command("test command", TESTUSER, true);
-            assertTrue(TESTUSER.received.size() > 0);
-            assertEquals("command ran", TESTUSER.received.get(TESTUSER.received.size() - 1).message());
-        } catch (Exception e) {
-            fail(e);
-        }
+        SUT.command("test command", TESTUSER, true);
+        assertTrue(TESTUSER.received.size() > 0);
+        assertEquals("command ran", TESTUSER.received.get(TESTUSER.received.size() - 1).message());
+    }
+
+    @Test
+    void context() {
+        SUT.command("context test", TESTUSER, true);
+        assertTrue(TESTUSER.received.size() > 0);
+        assertEquals(TestContextValue.value, TESTUSER.received.get(TESTUSER.received.size() - 1).message());
     }
 }
