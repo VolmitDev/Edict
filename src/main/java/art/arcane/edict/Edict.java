@@ -167,11 +167,28 @@ public class Edict {
      * Builder for Edict.
      */
     public static class EdictBuilder {
+        /**
+         * Register a new {@link ParameterHandler}. If none were registered before this, it also loads the {@link Edict#defaultParameterHandlers}.
+         * @param handler the handler to register
+         * @return this
+         */
         public EdictBuilder parameterHandler(ParameterHandler<?> handler) {
+            if (parameterHandlers$value == null) {
+                parameterHandlers(new ParameterHandlers(defaultParameterHandlers));
+            }
             parameterHandlers$value.add(handler);
             return this;
         }
+
+        /**
+         * Register a new {@link ContextHandler}.
+         * @param handler the handler to register
+         * @return this
+         */
         public EdictBuilder contextHandler(ContextHandler<?> handler) {
+            if (contextHandlers$value == null) {
+                contextHandlers(new ContextHandlers());
+            }
             contextHandlers$value.add(handler);
             return this;
         }
@@ -277,7 +294,7 @@ public class Edict {
             }
 
             for (VCommandable root : indexer.search(input.get(0), getSettings().matchThreshold, (vCommandable -> user.hasPermission(vCommandable.permission())))) {
-                d(new StringMessage("Running root: " + root.getClass().getSimpleName()));
+                d(new StringMessage("Running root: " + ((VClass) root).instance().getClass().getSimpleName()));
                 if (root.run(input.subList(1, input.size()), user)) {
                     return;
                 }
