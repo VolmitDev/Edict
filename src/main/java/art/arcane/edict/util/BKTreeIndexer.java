@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.function.Function;
 
+// TODO: Unit test
 public class BKTreeIndexer {
 
     /**
