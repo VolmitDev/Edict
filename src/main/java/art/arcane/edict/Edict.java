@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -247,6 +248,7 @@ public class Edict {
      */
     public void command(@NotNull String command, @NotNull User user, boolean forceSync) {
         Runnable r = () -> {
+
             final String fCommand = ParameterParser.cleanCommand(command);
 
             i(new StringMessage(user.name() + " sent command: " + fCommand));
@@ -265,6 +267,14 @@ public class Edict {
             // Loop over roots
             new UserContext().post(user);
             new SystemContext().post(this);
+
+            // Future
+            CompletableFuture<String> future = completableCommandsRegistry.getCompletableFor(user);
+            if (future != null) {
+                d(new StringMessage(user.name() + " completed command with " + String.join(" ", input)));
+                future.complete(command);
+                return;
+            }
 
             for (VCommandable root : indexer.search(input.get(0), getSettings().matchThreshold, (vCommandable -> user.hasPermission(vCommandable.permission())))) {
                 d(new StringMessage("Running root: " + root.getClass().getSimpleName()));
