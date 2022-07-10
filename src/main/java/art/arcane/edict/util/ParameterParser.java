@@ -1,6 +1,7 @@
 package art.arcane.edict.util;
 
 import art.arcane.edict.Edict;
+import art.arcane.edict.exception.ContextMissingException;
 import art.arcane.edict.exception.ParsingException;
 import art.arcane.edict.exception.WhichException;
 import art.arcane.edict.message.StringMessage;
@@ -284,12 +285,17 @@ public class ParameterParser {
      */
     private void parseContextual() {
         for (VParam param : new ArrayList<>(params)) {
-            params.remove(param);
-            assert param.contextHandler() != null;
-            values.put(
-                    param,
-                    param.contextHandler().handle(user)
-            );
+            try {
+                assert param.contextHandler() != null;
+                Object value = param.contextHandler().handle(user);
+                params.remove(param);
+                values.put(
+                        param,
+                        value
+                );
+            } catch (ContextMissingException e) {
+                // TODO: Handle
+            }
         }
     }
 
