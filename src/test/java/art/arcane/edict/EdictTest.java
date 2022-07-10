@@ -13,7 +13,7 @@ class EdictTest {
 
     // TODO: Complex command tests
 
-    final Edict SUT = Edict.builder().build();
+    final Edict SUT = Edict.builder(null).build();
     final TestUser TESTUSER = new TestUser();
 
     @Test

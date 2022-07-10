@@ -8,6 +8,13 @@ import art.arcane.edict.message.Message;
  */
 public class SystemUser implements User {
 
+    /**
+     * Create a new system user.
+     */
+    public SystemUser() {
+
+    }
+
     @Override
     public boolean canUseContext() {
         return false;

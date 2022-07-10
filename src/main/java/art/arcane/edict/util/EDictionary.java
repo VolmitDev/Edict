@@ -15,6 +15,13 @@ import java.util.concurrent.locks.ReentrantLock;
 public class EDictionary implements Edicted {
 
     /**
+     * Construct a new settings instance
+     */
+    public EDictionary() {
+
+    }
+
+    /**
      * Threshold required to match an input string successfully with a command.
      */
     public double matchThreshold = 0.6;

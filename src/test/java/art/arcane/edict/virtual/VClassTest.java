@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class VClassTest {
 
-    final Edict SYSTEM = Edict.builder().build();
+    final Edict SYSTEM = Edict.builder(null).build();
     final VClass SUT = VClass.fromInstance(new TestCommandClass(), null, SYSTEM);
 
     @Test

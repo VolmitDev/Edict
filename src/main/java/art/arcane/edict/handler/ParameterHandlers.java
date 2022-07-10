@@ -12,8 +12,8 @@ public class ParameterHandlers extends ArrayList<ParameterHandler<?>> {
       * Initialize parameter handler with some handlers.
       * @param handlers the handlers
       */
-     public ParameterHandlers(ParameterHandler<?>... handlers) {
-          addAll(List.of(handlers));
+     public ParameterHandlers(List<ParameterHandler<?>> handlers) {
+          addAll(handlers);
      }
 
      /**

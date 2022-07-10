@@ -1,5 +1,6 @@
 package art.arcane.edict;
 
+import art.arcane.edict.api.Command;
 import art.arcane.edict.completables.CompletableCommandsRegistry;
 import art.arcane.edict.context.SystemContext;
 import art.arcane.edict.context.UserContext;
@@ -28,17 +29,142 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
+// TODO: Make command structure example in readme.
+// TODO: Colored text
 /**
- * The main System.
- * TODO: Colored text
+ * <h1>Edict</h1>
+ * <i>A Command System by Arcane Arts</i><br><br>
+ * <h2>Constructing</h2>
+ * Build using {@link #builder(Object, Object...)} (Lombok).
+ * Specifying one or more @{@link Command} annotated classes as the root(s) of your command structure.
+ * An example for this (and the settings below) can be found in the {@code README.md}.<br><br>
+ * <h2>Configurable Options</h2>
+ * <i>Not all options may be mentioned here</i><br>
+ * <ul>
+ *  <li>{@link EdictBuilder#settings(EDictionary)} the settings instance<br>
+ *      By default, uses {@link EDictionary#EDictionary()}</li>
+ *  <li>{@link EdictBuilder#syncRunner(Consumer)} how to run commands sync<br>
+ *      By default, uses {@link Runnable#run()} (async)</li>
+ *  <li>{@link EdictBuilder#systemUser(SystemUser)} system user to write debug/info/warnings to<br>
+ *      By default, uses {@link SystemUser#SystemUser()} (System.out)</li>
+ *  <li>{@link EdictBuilder#permissionFactory(BiFunction)} permission factory to create permissions<br>
+ *      By default, uses {@link #defaultPermissionFactory}</li>
+ *  <li>{@link EdictBuilder#parameterHandler(ParameterHandler)} / {@link EdictBuilder#parameterHandlers(ParameterHandlers)} handlers for custom parameter types<br>
+ *      By default, features all parameter handlers in {@link #defaultParameterHandlers}</li>
+ *  <li>{@link EdictBuilder#contextHandler(ContextHandler)} / {@link EdictBuilder#contextHandlers(ContextHandlers)} handlers for custom context types<br>
+ *      By default, there are no context handlers</li>
+ * </ul>
+ * <h2>Running</h2>
+ * To parse commands through the system after initializing it, use {@link #command(String, User)}.
  */
 @SuppressWarnings("unused")
-@Builder
+@Builder(builderMethodName = "")
 public class Edict {
 
+    /**
+     * The default parameter handlers. For most basic Java types.
+     */
+    private static final List<ParameterHandler<?>> defaultParameterHandlers = new ArrayList<>(List.of(
+            new BooleanHandler(),
+            new ByteHandler(),
+            new DoubleHandler(),
+            new FloatHandler(),
+            new IntegerHandler(),
+            new LongHandler(),
+            new ShortHandler(),
+            new StringHandler()
+    ));
+
+    /**
+     * The default permission factory. Simply sets the parent as the parent and the toString method as the input string.
+     */
+    private static BiFunction<Permission, String, Permission> defaultPermissionFactory = (parent, s) -> new Permission() {
+        @Override
+        public Permission getParent() {
+            return parent;
+        }
+
+        @Override
+        public String toString() {
+            return s;
+        }
+    };
+
+    /**
+     * Command root instances.
+     */
     @Singular
     private List<Object> roots;
 
+    /**
+     * System user.
+     */
+    @Builder.Default
+    private SystemUser systemUser = new SystemUser();
+
+    /**
+     * Sync runner.
+     */
+    @Builder.Default
+    private Consumer<Runnable> syncRunner = Runnable::run;
+
+    /**
+     * Settings.
+     */
+    @Builder.Default
+    private EDictionary settings = new EDictionary();
+
+    /**
+     * Permission factory
+     */
+    @Builder.Default
+    private BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory = defaultPermissionFactory;
+
+    /**
+     * Handler registry.
+     */
+    @Builder.Default
+    private ParameterHandlers parameterHandlers = new ParameterHandlers(defaultParameterHandlers);
+
+    /**
+     * Context handler registry.
+     */
+    @Builder.Default
+    private ContextHandlers contextHandlers = new ContextHandlers();
+
+    /**
+     * Root commands
+     */
+    private final List<VCommandable> rootCommands = new ArrayList<>();
+
+    /**
+     * System indexer.
+     */
+    private final BKTreeIndexer indexer = new BKTreeIndexer();
+
+    /**
+     * Completable commands' registry.
+     */
+    private final CompletableCommandsRegistry completableCommandsRegistry = new CompletableCommandsRegistry();
+
+    /**
+     * Build Edict.
+     * @param mainRoot the main command root of the system. Can be {@code null}, in which case none are registered.
+     * @param roots other command roots
+     * @return the builder
+     */
+    public static EdictBuilder builder(@Nullable Object mainRoot, @NotNull Object... roots) {
+        List<Object> r = new ArrayList<>();
+        if (mainRoot != null) {
+            r.add(mainRoot);
+        }
+        r.addAll(List.of(roots));
+        return new EdictBuilder().roots(r);
+    }
+
+    /**
+     * Builder for Edict.
+     */
     public static class EdictBuilder {
         public EdictBuilder parameterHandler(ParameterHandler<?> handler) {
             parameterHandlers$value.add(handler);
@@ -50,8 +176,20 @@ public class Edict {
         }
     }
 
+    /**
+     * Construct Edict.
+     * @param roots the root command classes
+     * @param systemUser the user to send system messages to
+     * @param syncRunner the consumer that takes runnable objects that must be run sync
+     * @param settings the settings
+     * @param permissionFactory factory to make permissions
+     * @param parameterHandlers parameter handlers
+     * @param contextHandlers context handlers
+     * @throws NullPointerException if the {@link ParameterHandler} for any of the parameters of any methods of the {@link #roots} or any of its children is not registered
+     * or if the {@link ContextHandler} for any of the contextual parameter of any methods of the {@link #roots} or any of its children is not registered
+     */
     @Builder
-    public Edict(
+    private Edict(
             @NotNull List<Object> roots,
             @NotNull SystemUser systemUser,
             @NotNull Consumer<Runnable> syncRunner,
@@ -59,7 +197,7 @@ public class Edict {
             @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory,
             @NotNull ParameterHandlers parameterHandlers,
             @NotNull ContextHandlers contextHandlers
-    ) {
+    ) throws NullPointerException {
         this.roots = roots;
         this.systemUser = systemUser;
         this.syncRunner = syncRunner;
@@ -93,138 +231,6 @@ public class Edict {
     }
 
     /**
-     * Root commands
-     */
-    private final List<VCommandable> rootCommands = new ArrayList<>();
-
-    /**
-     * System indexer.
-     */
-    private final BKTreeIndexer indexer = new BKTreeIndexer();
-
-    /**
-     * Completable commands' registry.
-     */
-    private final CompletableCommandsRegistry completableCommandsRegistry = new CompletableCommandsRegistry();
-
-    /**
-     * System user.
-     */
-    @Builder.Default
-    private SystemUser systemUser = new SystemUser();
-
-    /**
-     * Sync runner.
-     */
-    @Builder.Default
-    private Consumer<Runnable> syncRunner = Runnable::run;
-
-    /**
-     * Settings.
-     */
-    @Builder.Default
-    private EDictionary settings = new EDictionary();
-
-    /**
-     * Permission factory
-     */
-    @Builder.Default
-    private BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory = (parent, s) -> new Permission() {
-        @Override
-        public Permission getParent() {
-            return parent;
-        }
-
-        @Override
-        public String toString() {
-            return s;
-        }
-    };
-
-    /**
-     * Handler registry.
-     */
-    @Builder.Default
-    private ParameterHandlers parameterHandlers = new ParameterHandlers(
-            new BooleanHandler(),
-            new ByteHandler(),
-            new DoubleHandler(),
-            new FloatHandler(),
-            new IntegerHandler(),
-            new LongHandler(),
-            new ShortHandler(),
-            new StringHandler()
-    );
-
-    /**
-     * Context handler registry.
-     */
-    @Builder.Default
-    private ContextHandlers contextHandlers = new ContextHandlers();
-
-
-//    /**
-//     * Create a new command system.<br>
-//     * Use {@link #command(String, User)} to run commands with the system.
-//     * @param commandRoots the roots of the commands
-//     * @param permissionFactory factory to create permissions
-//     * @param settings settings
-//     * @param systemUser the user to output system messages to
-//     * @param parameterHandlers the handlers you wish to register
-//     * @param contextHandlers the context handlers you wish to register
-//     * @param syncRunner consumer of runnable, called for {@link art.arcane.edict.api.Command}s that have {@link Command#sync()} true
-//     * @throws NullPointerException if the {@link ParameterHandler} for any of the parameters of any methods of the {@code commandRoots} or any of its children is not registered
-//     * or if the {@link ContextHandler} for any of the contextual parameter of any methods of the {@code commandRoots} or any of its children is not registered
-//     */
-//    public Edict(@NotNull List<Object> commandRoots, @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory, @NotNull EDictionary settings, @NotNull SystemUser systemUser, @NotNull ParameterHandler<?>[] parameterHandlers, @NotNull ContextHandler<?>[] contextHandlers, @NotNull Consumer<Runnable> syncRunner) throws NullPointerException {
-//
-//
-//        // Settings
-//        EDictionary.set(settings);
-//
-//        // System settings root
-//        if (EDictionary.get().settingsAsCommands) {
-//            VClass vRoot = VClass.fromInstance(EDictionary.get(), null, this);
-//            if (vRoot == null) {
-//                w(new StringMessage("Could not register settings commands!"));
-//            } else {
-//                rootCommands.add(vRoot);
-//            }
-//        }
-//
-//        // Command Roots
-//        for (Object root : commandRoots) {
-//            VClass vRoot = VClass.fromInstance(root, null, this);
-//            if (vRoot == null) {
-//                w(new StringMessage("Could not register root " + root.getClass().getSimpleName() + "!"));
-//                continue;
-//            }
-//            rootCommands.add(vRoot);
-//        }
-//
-//        // Indexer
-//        indexer.addAll(rootCommands);
-//
-//        // Handlers
-//        this.parameterHandlerRegistry = new ParameterHandlerRegistry(defaultHandlers);
-//        if (parameterHandlers != null) {
-//            for (ParameterHandler<?> handler : parameterHandlers) {
-//                parameterHandlerRegistry.register(handler);
-//                d(new StringMessage("Registered handler: " + handler.getClass().getSimpleName()));
-//            }
-//        }
-//
-//        // Context handlers
-//        this.contextHandlerRegistry = new ContextHandlerRegistry();
-//        if (contextHandlers != null) {
-//            for (ContextHandler<?> contextHandler : contextHandlers) {
-//                contextHandlerRegistry.add(contextHandler);
-//                d(new StringMessage("Registered context handler: " + contextHandler.getClass().getSimpleName()));
-//            }
-//        }
-//    }
-
-    /**
      * Run a command through the system.
      * @param command the command to run
      * @param user the user that ran the command
@@ -237,7 +243,7 @@ public class Edict {
      * Run a command through the system.
      * @param command the command to run
      * @param user the user that ran the command
-     * @param forceSync force the execution of this command in sync
+     * @param forceSync force the execution of this command in sync (testing)
      */
     public void command(@NotNull String command, @NotNull User user, boolean forceSync) {
         Runnable r = () -> {
