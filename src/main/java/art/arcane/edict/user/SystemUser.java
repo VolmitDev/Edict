@@ -2,6 +2,7 @@ package art.arcane.edict.user;
 
 
 import art.arcane.edict.message.Message;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * System user implementation. By default, sends to System.out.
@@ -21,7 +22,7 @@ public class SystemUser implements User {
     }
 
     @Override
-    public void send(Message message) {
+    public void send(@NotNull Message message) {
         System.out.println(message);
     }
 
