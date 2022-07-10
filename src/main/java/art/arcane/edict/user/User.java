@@ -22,7 +22,7 @@ public interface User {
      * Context is environment derived data that can be used by the system to autofill contextual (optional) parameters.
      * An example is a game you made, where there are multiple worlds; then the context can autofill the current world of the player.
      * @return whether the user can use context
-     * TODO: Context (+ tests)
+     * TODO: Context tests
      */
     boolean canUseContext();
 
