@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Registry for commands that need to be completed.
- * TODO: Feed back data into here
  */
 public class CompletableCommandsRegistry {
 
@@ -30,7 +29,7 @@ public class CompletableCommandsRegistry {
      * @param user the user to get the completable command for
      * @return the requested completable command or {@code null} if there is no completable command registered for the specified {@code user}
      */
-    public CompletableFuture<?> getCompletableFor(User user) throws NullPointerException {
+    public CompletableFuture<String> getCompletableFor(User user) throws NullPointerException {
         return commands.get(user);
     }
 }
