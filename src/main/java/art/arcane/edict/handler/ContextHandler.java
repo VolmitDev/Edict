@@ -1,5 +1,6 @@
 package art.arcane.edict.handler;
 
+import art.arcane.edict.exception.ContextMissingException;
 import art.arcane.edict.user.User;
 
 /**
@@ -19,6 +20,6 @@ public interface ContextHandler<T> {
      * @param user The user whose data may be used
      * @return The value in the assigned type
      */
-    T handle(User user);
+    T handle(User user) throws ContextMissingException;
 
 }
