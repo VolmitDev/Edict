@@ -28,6 +28,6 @@ public class ParameterHandlers extends ArrayList<ParameterHandler<?>> {
                     return handler;
                }
           }
-          throw new NullPointerException();
+          throw new NullPointerException("Cannot find ParameterHandler for: " + type.getSimpleName());
      }
 }

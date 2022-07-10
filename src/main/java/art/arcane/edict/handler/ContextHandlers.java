@@ -28,6 +28,6 @@ public class ContextHandlers extends ArrayList<ContextHandler<?>> {
                 return handler;
             }
         }
-        throw new NullPointerException("ContextHandler does not exist for type: " + type.getSimpleName());
+        throw new NullPointerException("Cannot find ContextHandler for: " + type.getSimpleName());
     }
 }
