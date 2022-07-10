@@ -1,5 +1,6 @@
 package art.arcane.edict.util;
 
+import art.arcane.edict.Edict;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
 import art.arcane.edict.virtual.VCommandable;
@@ -30,7 +31,7 @@ public class BKTreeIndexer {
             return Integer.MAX_VALUE;
         }
 
-        System.out.println(input + " - " + name);
+        // Debug System.out.println(input + " - " + name);
 
         //// Original algorithm
 
@@ -68,13 +69,13 @@ public class BKTreeIndexer {
             }
         }
 
-        for (int i = 0; i < map.length; i++) {
-            System.out.println(i + " " + Arrays.toString(map[i]));
-        }
+        // Debug for (int i = 0; i < map.length; i++) {
+        // Debug     System.out.println(i + " " + Arrays.toString(map[i]));
+        // Debug }
 
         int result = map[input.length() - 1][l2 - 1];
 
-        System.out.println(result);
+        // Debug System.out.println(result);
 
         return result;
     };
