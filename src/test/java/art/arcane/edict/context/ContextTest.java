@@ -27,20 +27,15 @@ class ContextTest {
     }
 
     @Test
-    void clean() throws InterruptedException {
-        ReentrantLock l = new ReentrantLock();
-        Thread r = new Thread(() -> {
-            l.lock();
+    void clean() {
+        Thread rr = Thread.currentThread();
+        new Thread(() -> {
             SUT.post(5);
-            l.unlock();
-        });
-        r.start();
-        Thread.sleep(2);
-        l.lock();
-        l.unlock();
-        assertEquals(5, SUT.context().get(r));
-        SUT.clean();
-        assertNull(SUT.context().get(r));
+            assertEquals(5, SUT.context().get(Thread.currentThread()));
+            SUT.clean();
+            assertNull(SUT.context().get(rr));
+            assertNull(SUT.context().get(Thread.currentThread()));
+        }).start();
     }
 
     @Test
