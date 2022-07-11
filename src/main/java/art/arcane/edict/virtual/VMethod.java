@@ -2,6 +2,9 @@ package art.arcane.edict.virtual;
 
 import art.arcane.edict.Edict;
 import art.arcane.edict.api.Command;
+import art.arcane.edict.message.CompoundMessage;
+import art.arcane.edict.message.HoverableClickableMessage;
+import art.arcane.edict.message.HoverableMessage;
 import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
@@ -35,11 +38,79 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
         return command.aliases();
     }
 
+    /**
+     * Send help to a user.
+     *
+     * @param user the user
+     */
+    @Override
+    public @NotNull CompoundMessage getHelpFor(@NotNull User user) {
+
+        String mainText = name();
+        String hoverText = name();
+        List<String> onRunCommand = buildCommand(user);
+        CompoundMessage result;
+
+        if (aliases().length != 0) {
+            hoverText += " (" + String.join(", ", aliases()) + ")\n";
+        }
+
+        if (!command.description().isBlank()) {
+            hoverText += command().description();
+        }
+
+        if (user.canUseClickable()) {
+            hoverText += "\nClick to run:\n" + String.join(" ", onRunCommand);
+            Runnable onRun = () -> user.suggestCommand(String.join(" ", onRunCommand));
+            result = new CompoundMessage(new HoverableClickableMessage(
+                    mainText,
+                    hoverText,
+                    onRun
+            ));
+        } else {
+            hoverText += "\nTo run with this parameter, enter:\n" + String.join(" ", onRunCommand);
+            result = new CompoundMessage(new HoverableMessage(
+                    mainText,
+                    hoverText
+            ));
+        }
+
+        for (VParam param : params) {
+            result.add(param.getHelpFor(user));
+        }
+
+        return result;
+    }
+
+    /**
+     * Build the required (full) command to get to this parameter.
+     * @param user the user to build the command for
+     * @return the command suggestion
+     */
+    private @NotNull List<String> buildCommand(@NotNull User user) {
+
+        VCommandable parent = parent();
+        List<String> command = new ArrayList<>();
+        while (parent != null) {
+            command.add(parent.name());
+            parent = parent.parent();
+        }
+
+        for (VParam param : params) {
+            if (param.isRequiredFor(user)) {
+                command.add(param.name() + "= ");
+            }
+        }
+
+        command.add(name() + "= ");
+
+        return command;
+    }
+
     @Override
     public boolean run(@NotNull List<String> input, @NotNull User user) {
-        if (input.size() < params.size()) {
-            // TODO: Send command help
-            user.send(new StringMessage("Send more parameters bitch"));
+        if (input.size() < params.stream().filter(p -> !(p.param().contextual() && user.canUseContext()) || !p.param().defaultValue().isBlank()).count()) {
+            user.send(getHelpFor(user));
             return true;
         }
         user.send(new StringMessage("Running command " + name() + " with input: " + String.join(", ", input)));

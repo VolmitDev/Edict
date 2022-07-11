@@ -1,5 +1,7 @@
 package art.arcane.edict.message;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,14 +13,20 @@ public class CompoundMessage implements Message {
     /**
      * The messages in this compound.
      */
-    final List<Message> messages;
+    final List<Message> messages = new ArrayList<>();
 
     /**
      * Construct a new compound message.
      * @param messages the messages in this compound
      */
     public CompoundMessage(Message... messages) {
-        this.messages = List.of(messages);
+        for (Message message : messages) {
+            if (message instanceof CompoundMessage compoundMessage) {
+                this.messages.addAll(compoundMessage.getMessages());
+            } else {
+                this.messages.add(message);
+            }
+        }
     }
 
     /**
@@ -27,6 +35,16 @@ public class CompoundMessage implements Message {
      */
     public List<Message> getMessages() {
         return messages;
+    }
+
+    /**
+     * Add two compound messages.
+     * @param message the other compound message
+     * @return the new compound message
+     */
+    public @NotNull CompoundMessage add(@NotNull CompoundMessage message) {
+        messages.addAll(message.getMessages());
+        return this;
     }
 
     /**

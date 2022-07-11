@@ -1,13 +1,15 @@
 package art.arcane.edict.virtual;
 
-import art.arcane.edict.handler.ContextHandler;
-import art.arcane.edict.handler.ParameterHandler;
-import art.arcane.edict.util.BKTreeIndexer;
 import art.arcane.edict.Edict;
 import art.arcane.edict.api.Command;
+import art.arcane.edict.handler.ContextHandler;
+import art.arcane.edict.handler.ParameterHandler;
+import art.arcane.edict.message.CompoundMessage;
+import art.arcane.edict.message.HoverableMessage;
 import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
+import art.arcane.edict.util.BKTreeIndexer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,7 +17,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.MissingResourceException;
 
 /**
  * Record of a virtual command category. Represents a position in the tree of commands.
@@ -81,14 +85,16 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
             }
             method.setAccessible(true);
             annotation = method.getDeclaredAnnotation(Command.class);
-            category.children.add(new VMethod(
+            VMethod vMethod = new VMethod(
                     annotation,
                     category,
                     method,
-                    VParam.paramsFromMethod(method, system),
+                    new ArrayList<>(),
                     system.makePermission(category.permission, annotation.permission()),
-                    system)
+                    system
             );
+            vMethod.params().addAll(VParam.paramsFromMethod(vMethod, method, system));
+            category.children.add(vMethod);
         }
 
         // Loop over fields to find more command categories
@@ -160,6 +166,24 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
     }
 
     /**
+     * Send help to a user.
+     *
+     * @param user the user
+     */
+    @Override
+    public @NotNull CompoundMessage getHelpFor(@NotNull User user) {
+        CompoundMessage message = new CompoundMessage(new HoverableMessage(
+                name() + " Category Help",
+                command().description()
+        ));
+        for (VCommandable child : children) {
+            message.add(child.getHelpFor(user));
+            message.add(new CompoundMessage(new StringMessage("\n")));
+        }
+        return message;
+    }
+
+    /**
      * The tree indexer of the commandable.
      * @return the tree indexer of the commandable
      */
@@ -172,8 +196,7 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
 
         // Send help when this is the final node
         if (input.isEmpty()) {
-            // TODO: Send category help
-            user.send(new StringMessage(name() + ": Need more input to reach command"));
+            user.send(getHelpFor(user));
             return true;
         }
 

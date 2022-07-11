@@ -1,5 +1,6 @@
 package art.arcane.edict.util;
 
+import art.arcane.edict.message.CompoundMessage;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
 import art.arcane.edict.virtual.VCommandable;
@@ -157,8 +158,28 @@ public class BKTreeIndexer {
             throw new NotImplementedException();
         }
 
+        /**
+         * Parent commandable.
+         *
+         * @return the parent commandable
+         */
+        @Override
+        public @NotNull VCommandable parent() {
+            throw new NotImplementedException();
+        }
+
         @Override
         public @NotNull Permission permission() {
+            throw new NotImplementedException();
+        }
+
+        /**
+         * Send help to a user.
+         *
+         * @param user the user
+         */
+        @Override
+        public @NotNull CompoundMessage getHelpFor(@NotNull User user) {
             throw new NotImplementedException();
         }
 
