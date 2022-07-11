@@ -17,6 +17,14 @@ public class TestUser implements User {
         return false;
     }
 
+    /**
+     * Whether the user can use clickable messages.
+     */
+    @Override
+    public boolean canUseClickable() {
+        return false;
+    }
+
     @Override
     public void send(@NotNull Message message) {
         if (message instanceof StringMessage) {

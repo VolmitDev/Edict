@@ -62,6 +62,16 @@ public class EDictionary implements Edicted {
     }
 
     /**
+     * Timeout for multiple-option picking (multiplied by {@link #optionPickAttempts} if all tries timeout).
+     */
+    public int optionPickTimeout;
+
+    @Command(description = "Set timeout for multiple-option picking (multiplied by optionPickAttempts if all tries timeout).")
+    public void setOptionPickTimeout(int optionPickTimeout) {
+        update("optionPickTimeout", this.optionPickTimeout, optionPickTimeout, () -> this.optionPickTimeout = optionPickTimeout);
+    }
+
+    /**
      * Send an update to the user and system.
      * @param setting the name of the setting
      * @param oldValue the old value of the setting

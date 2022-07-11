@@ -2,10 +2,21 @@ package art.arcane.edict.message;
 
 /**
  * A message string.
- *
- * @param message The message this contains.
  */
-public record StringMessage(String message) implements Message {
+public class StringMessage implements Message {
+
+    /**
+     * Message in the string message.
+     */
+    private final String message;
+
+    /**
+     * Construct a new string message.
+     * @param message the message
+     */
+    public StringMessage(String message) {
+        this.message = message;
+    }
 
     @Override
     public String toString() {

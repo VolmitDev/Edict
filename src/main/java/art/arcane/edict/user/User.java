@@ -2,7 +2,6 @@ package art.arcane.edict.user;
 
 import art.arcane.edict.message.Message;
 import art.arcane.edict.permission.Permission;
-import art.arcane.edict.util.SFX;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -27,6 +26,11 @@ public interface User {
     boolean canUseContext();
 
     /**
+     * Whether the user can use clickable messages.
+     */
+    boolean canUseClickable();
+
+    /**
      * Send the user a message.
      * @param message the message to send
      */
@@ -42,8 +46,8 @@ public interface User {
     }
 
     /**
-     * Play a sound effect to the user.
-     * @param effect the sound effect
+     * Play a sound effect to the user informing them their input had multiple options, and they should pick one.
+     * Does nothing by default.
      */
-    default void playSFX(@NotNull SFX effect) {}
+    default void playPickNotification() {}
 }

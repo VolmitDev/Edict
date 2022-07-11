@@ -4,6 +4,7 @@ import art.arcane.edict.Edict;
 import art.arcane.edict.exception.ContextMissingException;
 import art.arcane.edict.exception.ParsingException;
 import art.arcane.edict.exception.WhichException;
+import art.arcane.edict.message.ClickableMessage;
 import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.user.User;
 import art.arcane.edict.virtual.VParam;
@@ -293,8 +294,8 @@ public class ParameterParser {
                         param,
                         value
                 );
-            } catch (ContextMissingException e) {
-                // TODO: Handle
+            } catch (ContextMissingException ignored) {
+
             }
         }
     }
@@ -370,37 +371,46 @@ public class ParameterParser {
         user.send(new StringMessage("This query will expire in 15 seconds."));
 
         int tries = 0;
-        String result = null;
+        Integer result = null;
 
-        while (tries++ < system.getSettings().optionPickAttempts && (result == null || !options.contains(result))) {
-            user.send(new StringMessage("Please pick a valid option."));
-
-            for (int i = 0; i < values.size(); i++) {
-                // TODO: Hover-able clickable
-                user.send(new StringMessage(i + ") " + values.get(i)));
+        while (tries++ < system.getSettings().optionPickAttempts) {
+            // TODO: If user.canUseClickable(
+            if (user.canUseClickable()) {
+                user.send(new StringMessage("Please pick a valid option by clicking the option."));
+                for (int i = 0; i < values.size(); i++) {
+                    int finalI = i;
+                    user.send(new ClickableMessage(values.get(i), () -> system.command(String.valueOf(finalI), user)));
+                }
+            } else {
+                user.send(new StringMessage("Please pick a valid option by inputting the number before the option."));
+                for (int i = 0; i < values.size(); i++) {
+                    user.send(new StringMessage(i + ") " + values.get(i)));
+                }
             }
 
             CompletableFuture<String> future = new CompletableFuture<>();
             system.getCompletableCommandsRegistry().register(user, future);
-            user.playSFX(SFX.PICK_AN_OPTION);
+            user.playPickNotification();
 
             try {
-                result = future.get(15, TimeUnit.SECONDS);
-            } catch (InterruptedException | ExecutionException | TimeoutException ignored) {
-
+                result = Integer.parseInt(future.get(system.getSettings().optionPickTimeout, TimeUnit.SECONDS));
+            } catch (InterruptedException | ExecutionException ignored) {
+                user.send(new StringMessage("Your input was interrupted, please try again"));
+            } catch (TimeoutException ignored) {
+                user.send(new StringMessage("Your input query timed out. Please enter your option within " + system.getSettings().optionPickTimeout + " seconds"));
+            } catch (NumberFormatException ignored) {
+                user.send(new StringMessage("Your input was not a number, and picking the option failed. Please enter a number."));
             }
-        }
 
-        if (result != null && values.contains(result)) {
-            for (int i = 0; i < values.size(); i++) {
-                if (values.get(i).equals(result)) {
-                    return options.get(i);
-                }
+            if (result == null) {
+                continue;
             }
+
+            return options.get(result);
         }
 
         user.send(new StringMessage("You did not enter a correct option within " + tries + " tries."));
-        user.send(new StringMessage("Please double-check your arguments & option picking."));
+        user.send(new StringMessage("Please re-run the command."));
 
         return null;
     }
