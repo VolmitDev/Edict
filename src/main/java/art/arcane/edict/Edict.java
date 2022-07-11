@@ -33,6 +33,7 @@ import java.util.function.Consumer;
 // TODO: Make command structure example in readme.
 // TODO: Colored text
 // TODO: Add auto-completions
+// TODO: Test help
 /**
  * <h1>Edict</h1>
  * <i>A Command System by Arcane Arts</i><br><br>
@@ -275,8 +276,9 @@ public class Edict {
 
             // Blank check
             if (input.isEmpty()) {
-                // TODO: Send root command help
-                user.send(new StringMessage("This is an empty command wtf do you want"));
+                for (VCommandable root : rootCommands) {
+                    user.send(root.getHelpFor(user));
+                }
                 return;
             }
 
