@@ -254,7 +254,7 @@ public class Edict {
      * @param command the command to run
      * @param user the user that ran the command
      */
-    public void command(@NotNull String command, @NotNull User user) {
+    final public void command(@NotNull String command, @NotNull User user) {
         command(command, user, false);
     }
 
@@ -264,7 +264,7 @@ public class Edict {
      * @param user the user that ran the command
      * @param forceSync force the execution of this command in sync (testing)
      */
-    public void command(@NotNull String command, @NotNull User user, boolean forceSync) {
+    final public void command(@NotNull String command, @NotNull User user, boolean forceSync) {
         Runnable r = () -> {
 
             final String fCommand = ParameterParser.cleanCommand(command);
@@ -318,28 +318,29 @@ public class Edict {
      * Make a {@link Permission} node.
      * @param input the input to make the node
      */
-    public @NotNull Permission makePermission(@Nullable Permission parent, @NotNull String input) {
+    @NotNull
+    final public Permission makePermission(@Nullable Permission parent, @NotNull String input) {
         return permissionFactory.apply(parent, input);
     }
 
     /**
      * Send an information message to the system.
      */
-    public void i(Message message) {
+    final public void i(Message message) {
         systemUser.i(message);
     }
 
     /**
      * Send a warning message to the system.
      */
-    public void w(Message message) {
+    final public void w(Message message) {
         systemUser.w(message);
     }
 
     /**
      * Send a debug message to the system.
      */
-    public void d(Message message) {
+    final public void d(Message message) {
         systemUser.d(message);
     }
 
@@ -347,7 +348,7 @@ public class Edict {
      * Get system settings.
      * @return the system settings
      */
-    public EDictionary getSettings() {
+    final public EDictionary getSettings() {
         return settings;
     }
 
@@ -355,7 +356,7 @@ public class Edict {
      * Get the {@link ParameterHandlers}.
      * @return the {@link ParameterHandlers}
      */
-    public ParameterHandlers getParameterHandlers() {
+    final public ParameterHandlers getParameterHandlers() {
         return parameterHandlers;
     }
 
@@ -363,7 +364,7 @@ public class Edict {
      * Get the {@link ContextHandlers}.
      * @return the {@link ContextHandlers}
      */
-    public ContextHandlers getContextHandlers() {
+    final public ContextHandlers getContextHandlers() {
         return contextHandlers;
     }
 
@@ -371,7 +372,7 @@ public class Edict {
      * Get the {@link CompletableCommandsRegistry}.
      * @return the {@link CompletableCommandsRegistry}
      */
-    public CompletableCommandsRegistry getCompletableCommandsRegistry() {
+    final public CompletableCommandsRegistry getCompletableCommandsRegistry() {
         return completableCommandsRegistry;
     }
 
@@ -379,7 +380,7 @@ public class Edict {
      * Run a runnable in sync, using the {@link #syncRunner}.
      * @param runnable the runnable to run
      */
-    public void runSync(Runnable runnable) {
+    final public void runSync(Runnable runnable) {
         syncRunner.accept(runnable);
     }
 }
