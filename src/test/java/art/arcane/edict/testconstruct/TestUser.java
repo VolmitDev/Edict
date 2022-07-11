@@ -11,6 +11,7 @@ import java.util.List;
 public class TestUser implements User {
 
     public final List<StringMessage> received = new ArrayList<>();
+    public final List<String> receivedSuggested = new ArrayList<>();
 
     @Override
     public boolean canUseContext() {
@@ -32,5 +33,15 @@ public class TestUser implements User {
         } else {
             received.add(new StringMessage("Received non-string message"));
         }
+    }
+
+    /**
+     * Suggest a command with missing inputs (like a form).
+     *
+     * @param command a string that can be used as input after adding values.
+     */
+    @Override
+    public void suggestCommand(String command) {
+        receivedSuggested.add(command);
     }
 }

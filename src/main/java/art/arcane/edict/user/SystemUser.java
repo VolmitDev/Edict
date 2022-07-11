@@ -35,6 +35,16 @@ public class SystemUser implements User {
     }
 
     /**
+     * Suggest a command with missing inputs (like a form).
+     *
+     * @param command a string that can be used as input after adding values.
+     */
+    @Override
+    public void suggestCommand(String command) {
+        System.out.println("Command suggested: " + command);
+    }
+
+    /**
      * Send an information message to the system.
      */
     public void i(Message message) {

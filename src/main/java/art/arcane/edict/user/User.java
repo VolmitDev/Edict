@@ -37,6 +37,12 @@ public interface User {
     void send(@NotNull Message message);
 
     /**
+     * Suggest a command with missing inputs (like a form).
+     * @param command a string that can be used as input after adding values.
+     */
+    void suggestCommand(String command);
+
+    /**
      * Whether the user has permission for a specific permission node.
      * @param permission the permission node
      * @return true if permission is granted
