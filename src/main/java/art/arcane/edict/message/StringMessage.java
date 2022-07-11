@@ -19,7 +19,7 @@ public class StringMessage implements Message {
     }
 
     @Override
-    public String toString() {
+    public String string() {
         return message;
     }
 }

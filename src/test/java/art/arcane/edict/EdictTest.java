@@ -20,7 +20,7 @@ class EdictTest {
     void testMethod() {
         new UserContext().post(TESTUSER);
         new TestCommandClass().command();
-        assertEquals("command ran", TESTUSER.received.get(0).toString());
+        assertEquals("command ran", TESTUSER.received.get(0).string());
         TESTUSER.received.clear();
     }
 
@@ -28,13 +28,13 @@ class EdictTest {
     void command() {
         SUT.command("test command", TESTUSER, true);
         assertTrue(TESTUSER.received.size() > 0);
-        assertEquals("command ran", TESTUSER.received.get(TESTUSER.received.size() - 1).toString());
+        assertEquals("command ran", TESTUSER.received.get(TESTUSER.received.size() - 1).string());
     }
 
     @Test
     void context() {
         SUT.command("context test", TESTUSER, true);
         assertTrue(TESTUSER.received.size() > 0);
-        assertEquals(TestContextValue.value, TESTUSER.received.get(TESTUSER.received.size() - 1).toString());
+        assertEquals(TestContextValue.value, TESTUSER.received.get(TESTUSER.received.size() - 1).string());
     }
 }

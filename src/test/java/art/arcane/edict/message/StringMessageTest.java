@@ -10,7 +10,7 @@ class StringMessageTest {
 
     @Test
     public void constructorTest() {
-        assertEquals("Test", SUT.toString());
+        assertEquals("Test", SUT.string());
     }
 
     @Test

@@ -21,7 +21,7 @@ import java.util.MissingResourceException;
  * @param param the parameter annotation
  * @param parameter the parameter itself
  */
-public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNull ParameterHandler<?> handler, @Nullable ContextHandler<?> contextHandler) implements VCommandable {
+public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNull ParameterHandler<?> parameterHandler, @Nullable ContextHandler<?> contextHandler) implements VCommandable {
 
     /**
      * Create a list of parameters from a method.

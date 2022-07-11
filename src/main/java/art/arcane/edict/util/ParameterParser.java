@@ -364,7 +364,7 @@ public class ParameterParser {
 
         List<String> values = new ArrayList<>();
         for (Object option : options) {
-            values.add(param.handler().toStringForce(option));
+            values.add(param.parameterHandler().toStringForce(option));
         }
 
         user.send(new StringMessage("Pick a " + param.name() + " (" + param.parameter().getType().getSimpleName() + ")"));
