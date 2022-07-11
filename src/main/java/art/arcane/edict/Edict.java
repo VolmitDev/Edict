@@ -32,6 +32,7 @@ import java.util.function.Consumer;
 
 // TODO: Make command structure example in readme.
 // TODO: Colored text
+// TODO: Add Tab Completions
 /**
  * <h1>Edict</h1>
  * <i>A Command System by Arcane Arts</i><br><br>
