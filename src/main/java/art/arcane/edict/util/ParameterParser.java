@@ -374,7 +374,6 @@ public class ParameterParser {
         Integer result = null;
 
         while (tries++ < system.getSettings().optionPickAttempts) {
-            // TODO: If user.canUseClickable(
             if (user.canUseClickable()) {
                 user.send(new StringMessage("Please pick a valid option by clicking the option."));
                 for (int i = 0; i < values.size(); i++) {
