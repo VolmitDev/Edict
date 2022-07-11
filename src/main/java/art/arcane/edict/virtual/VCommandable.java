@@ -1,5 +1,7 @@
 package art.arcane.edict.virtual;
 
+import art.arcane.edict.message.CompoundMessage;
+import art.arcane.edict.message.Message;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +25,12 @@ public interface VCommandable {
     @NotNull String[] aliases();
 
     /**
+     * Parent commandable.
+     * @return the parent commandable
+     */
+    @NotNull VCommandable parent();
+
+    /**
      * All names (including aliases) of the commandable.
      * @return all names of the commandable
      */
@@ -37,6 +45,12 @@ public interface VCommandable {
      * @return the permission node of the commandable
      */
     @NotNull Permission permission();
+
+    /**
+     * Send help to a user.
+     * @param user the user
+     */
+    @NotNull CompoundMessage getHelpFor(@NotNull User user);
 
     /**
      * Run this commandable. It is assumed that this is in fact the right commandable, and that the user has permission.
