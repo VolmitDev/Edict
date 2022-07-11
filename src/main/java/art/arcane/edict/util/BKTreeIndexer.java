@@ -1,6 +1,5 @@
 package art.arcane.edict.util;
 
-import art.arcane.edict.Edict;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
 import art.arcane.edict.virtual.VCommandable;
@@ -74,11 +73,9 @@ public class BKTreeIndexer {
         // Debug     System.out.println(i + " " + Arrays.toString(map[i]));
         // Debug }
 
-        int result = map[input.length() - 1][l2 - 1];
+        // Debug System.out.println(map[input.length() - 1][l2 - 1]);
 
-        // Debug System.out.println(result);
-
-        return result;
+        return (int) map[input.length() - 1][l2 - 1];
     };
 
     /**
