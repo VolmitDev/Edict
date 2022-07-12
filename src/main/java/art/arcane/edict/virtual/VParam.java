@@ -78,7 +78,7 @@ public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNul
      */
     @Override
     public @NotNull String name() {
-        return param.name();
+        return param.name().isBlank() ? parameter.getName() : param.name();
     }
 
     /**
@@ -201,5 +201,9 @@ public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNul
     @Override
     public boolean run(@NotNull List<String> input, @NotNull User user) {
         throw new NotImplementedException();
+    }
+    @Override
+    public int hashCode() {
+        return param.hashCode() + parameter.hashCode() + parameterHandler.hashCode() + (contextHandler != null ? contextHandler.hashCode() : 0) + system.hashCode();
     }
 }
