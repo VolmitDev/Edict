@@ -8,8 +8,9 @@ import art.arcane.edict.message.HoverableMessage;
 import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
-import art.arcane.edict.util.ParameterParser;
+import art.arcane.edict.parser.ParameterParser;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -133,17 +134,21 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
             return true;
         }
 
-        if (!verifyParameters(values, method)){
+        String reason = verifyParameters(values, method);
+        if (reason != null) {
             long l = System.currentTimeMillis();
             user.send(new StringMessage("WARNING: System error, parameter value extraction failed. Please contact your admin with code: " + l));
-            system.w(new StringMessage("(Code + " + l + ") Parameter value extraction failed for " + parent().getClass() + "#" + method.getName() + " with input '" + String.join(" ", input) + "' -> " + Arrays.toString(values)));
+            system.w(new StringMessage("(Code " + l + ") Parameter value extraction failed for " + parent().instance().getClass() + "#" + method.getName() + " with input '" + String.join(" ", input) + "' -> " + Arrays.toString(values) + "\n" +
+                    "Because of: " + reason));
+            return true;
         }
+
 
         AtomicBoolean success = new AtomicBoolean(true);
 
         Runnable executor = () -> {
             try {
-                method.invoke(parent.instance());
+                method.invoke(parent.instance(), values);
                 success.set(true);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 long l = System.currentTimeMillis();
@@ -168,19 +173,22 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
      * Verify that the generated parameters for a method are correct.
      * @param parameterValues the generated parameter values
      * @param method the method
-     * @return true if the parameter values are valid for the method, false if not
+     * @return null if successful. Otherwise, a string message with the reason
      */
-    private static boolean verifyParameters(@NotNull Object[] parameterValues, @NotNull Method method) {
+    private static @Nullable String verifyParameters(@NotNull Object @NotNull [] parameterValues, @NotNull Method method) {
+        if (parameterValues.length != method.getParameters().length) {
+            return parameterValues.length + " does not equal required parameter count of " + method.getParameters().length;
+        }
         for (int i = 0; i < method.getParameters().length; i++) {
             if (parameterValues[i] == null) {
                 continue;
             }
 
             if (parameterValues[i].getClass() != method.getParameters()[i].getType()) {
-                return false;
+                return "Type of parameter " + i + " is " + parameterValues[i].getClass().getSimpleName() + " but should be " + method.getParameters()[i].getType().getSimpleName();
             }
         }
-        return true;
+        return null;
     }
 
     @Override
