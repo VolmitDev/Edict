@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 
 // TODO: Make command structure example in readme.
 // TODO: Colored text
-// TODO: Add auto-completions
+// TODO: Add auto-completions / suggestions
 // TODO: Test help
 /**
  * <h1>Edict</h1>

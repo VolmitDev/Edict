@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class EdictTest {
 
     // TODO: Complex command tests
+    // TODO: Ambiguous command tests (close calls)
 
     final Edict SUT = Edict.builder(new TestCommandClass(), new TestCommandClassContext())
             .contextHandler(new TestContextValueContextHandler())
