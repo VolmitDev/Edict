@@ -1,4 +1,4 @@
-package art.arcane.edict.util;
+package art.arcane.edict.parser;
 
 import art.arcane.edict.Edict;
 import art.arcane.edict.exception.ContextMissingException;
@@ -29,6 +29,11 @@ public class ParameterParser {
      * Parameters that need values.
      */
     private final @NotNull List<VParam> params;
+
+    /**
+     * Remaining parameters.
+     */
+    private final @NotNull List<VParam> remainingParams;
 
     /**
      * The user running the command.
@@ -84,6 +89,7 @@ public class ParameterParser {
     public ParameterParser(@NotNull List<String> input, @NotNull List<VParam> params, @NotNull User user, @NotNull Edict system) {
         this.input = input;
         this.params = params;
+        this.remainingParams = new ArrayList<>(params);
         this.user = user;
         this.system = system;
     }
@@ -118,17 +124,27 @@ public class ParameterParser {
      * @throws RuntimeException in case a bug in the system causes invalid states. This would be a problem with Edict.
      */
     public @Nullable Object[] parse() throws RuntimeException {
+        dump("Initial");
         divideInput();
+        dump("Divide Input");
         assignKeyed();
+        dump("Assign Keyed");
         assignDashBoolean();
+        dump("Dash Boolean");
         assignKeyless();
+        dump("Assign Keyless");
         assignDefaults();
+        dump("Assign Defaults");
         if (!checkSufficientInput()) {
+            dump("Check Sufficient Input Failed");
             return null;
         }
         parseContextual();
+        dump("Parse Contextual");
         parseInputs();
+        dump("Parse Inputs");
         checkAllValues();
+        dump("Check Values");
         return getResult();
     }
 
@@ -169,28 +185,28 @@ public class ParameterParser {
             String key = arg.split("\\Q=\\E")[0];
             String value = arg.split("\\Q=\\E")[1];
 
-            for (VParam param : new ArrayList<>(params)) {
+            for (VParam param : new ArrayList<>(remainingParams)) {
                 if (param.allNames().contains(key)) {
-                    params.remove(param);
+                    remainingParams.remove(param);
                     inputs.put(param, value);
                     continue loop;
                 }
             }
 
-            for (VParam param : new ArrayList<>(params)) {
+            for (VParam param : new ArrayList<>(remainingParams)) {
                 for (String name : param.allNames()) {
                     if (name.contains(key)) {
-                        params.remove(param);
+                        remainingParams.remove(param);
                         inputs.put(param, value);
                         continue loop;
                     }
                 }
             }
 
-            for (VParam param : new ArrayList<>(params)) {
+            for (VParam param : new ArrayList<>(remainingParams)) {
                 for (String name : param.allNames()) {
                     if (key.contains(name)) {
-                        params.remove(param);
+                        remainingParams.remove(param);
                         inputs.put(param, value);
                         continue loop;
                     }
@@ -208,34 +224,34 @@ public class ParameterParser {
         loop: while (!dashBooleanArgs.isEmpty()) {
             String key = dashBooleanArgs.remove(0).substring(1);
 
-            for (VParam param : new ArrayList<>(params)) {
+            for (VParam param : new ArrayList<>(remainingParams)) {
                 if (param.allNames().contains(key)
                         && param.parameter().getType().equals(Boolean.class)
                         || param.parameter().getType().equals(boolean.class)) {
-                    params.remove(param);
+                    remainingParams.remove(param);
                     inputs.put(param, "true");
                     continue loop;
                 }
             }
 
-            for (VParam param : new ArrayList<>(params)) {
+            for (VParam param : new ArrayList<>(remainingParams)) {
                 for (String name : param.allNames()) {
                     if (name.contains(key)
                             && param.parameter().getType().equals(Boolean.class)
                             || param.parameter().getType().equals(boolean.class)) {
-                        params.remove(param);
+                        remainingParams.remove(param);
                         inputs.put(param, "true");
                         continue loop;
                     }
                 }
             }
 
-            for (VParam param : new ArrayList<>(params)) {
+            for (VParam param : new ArrayList<>(remainingParams)) {
                 for (String name : param.allNames()) {
                     if (key.contains(name)
                             && param.parameter().getType().equals(Boolean.class)
                             || param.parameter().getType().equals(boolean.class)) {
-                        params.remove(param);
+                        remainingParams.remove(param);
                         inputs.put(param, "true");
                         continue loop;
                     }
@@ -251,7 +267,7 @@ public class ParameterParser {
      */
     private void assignKeyless() {
         while (!keylessArgs.isEmpty()) {
-            inputs.put(params.remove(0), keylessArgs.remove(0));
+            inputs.put(remainingParams.remove(0), keylessArgs.remove(0));
         }
     }
 
@@ -259,10 +275,10 @@ public class ParameterParser {
      * Assign default values (if available) to their {@link VParam}.
      */
     private void assignDefaults() {
-        for (VParam param : new ArrayList<>(params)) {
+        for (VParam param : new ArrayList<>(remainingParams)) {
             if (!param.param().defaultValue().isBlank()) {
                 // Has a default
-                params.remove(param);
+                remainingParams.remove(param);
                 inputs.put(param, param.param().defaultValue());
             }
         }
@@ -273,7 +289,7 @@ public class ParameterParser {
      * @return true if sufficient input was provided
      */
     private boolean checkSufficientInput() {
-        for (VParam param : new ArrayList<>(params)) {
+        for (VParam param : new ArrayList<>(remainingParams)) {
             if (!inputs.containsKey(param) && !(param.param().contextual() && user.canUseContext())) {
                 missingInputs.add(param);
             }
@@ -285,11 +301,11 @@ public class ParameterParser {
      * Parse contextual values.
      */
     private void parseContextual() {
-        for (VParam param : new ArrayList<>(params)) {
+        for (VParam param : new ArrayList<>(remainingParams)) {
             try {
                 assert param.contextHandler() != null;
                 Object value = param.contextHandler().handle(user);
-                params.remove(param);
+                remainingParams.remove(param);
                 values.put(
                         param,
                         value
@@ -327,7 +343,7 @@ public class ParameterParser {
      * @throws RuntimeException if a value is null, missing or if the value is of an incorrect type
      */
     private void checkAllValues() throws RuntimeException {
-        for (VParam param : params) {
+        for (VParam param : remainingParams) {
             Object value = values.get(param);
             if (value == null) {
                 throw new RuntimeException("A parameter is missing from the mapping, which should never happen!");
@@ -348,6 +364,23 @@ public class ParameterParser {
             result[i] = values.get(params.get(i));
         }
         return result;
+    }
+
+    /**
+     * Dump all data of this parser at any given time.
+     */
+    private void dump(String stage) {
+        system.d(new StringMessage(stage + " Dump"));
+        system.d(new StringMessage("User: " + user.name()));
+        system.d(new StringMessage("Input: " + String.join(" / ", input)));
+        system.d(new StringMessage("Params: " + String.join(" / ", remainingParams.stream().map(VParam::name).toList())));
+        system.d(new StringMessage("Values: " + String.join(" / ", values.keySet().stream().map(k -> k.name() + " > " + k.parameterHandler().toStringForce(values.get(k))).toList())));
+        system.d(new StringMessage("Inputs: " + String.join(" / " + inputs.keySet().stream().map(k -> k.name() + " = " + values.get(k)))));
+        system.d(new StringMessage("BadArgs: " + String.join(" / ", badArgs.keySet().stream().map(k -> k + " > " + badArgs.get(k)).toList())));
+        system.d(new StringMessage("DashArgs: " + String.join(" / " + dashBooleanArgs)));
+        system.d(new StringMessage("KeylessArgs: " + String.join(" / " + keylessArgs)));
+        system.d(new StringMessage("KeyedArgs: " + String.join(" / " + keyedArgs)));
+        system.d(new StringMessage("MissingInputs: " + String.join(" / " + missingInputs.stream().map(VParam::name).toList()) + "\n"));
     }
 
     /**

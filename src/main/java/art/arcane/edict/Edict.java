@@ -16,7 +16,7 @@ import art.arcane.edict.user.SystemUser;
 import art.arcane.edict.user.User;
 import art.arcane.edict.util.BKTreeIndexer;
 import art.arcane.edict.util.EDictionary;
-import art.arcane.edict.util.ParameterParser;
+import art.arcane.edict.parser.ParameterParser;
 import art.arcane.edict.virtual.VClass;
 import art.arcane.edict.virtual.VCommandable;
 import lombok.Builder;
