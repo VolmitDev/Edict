@@ -30,6 +30,7 @@ public class TestUser implements User {
     public void send(@NotNull Message message) {
         if (message instanceof StringMessage) {
             received.add((StringMessage) message);
+            System.out.println(message.string());
         } else {
             received.add(new StringMessage("Received non-string message"));
         }
