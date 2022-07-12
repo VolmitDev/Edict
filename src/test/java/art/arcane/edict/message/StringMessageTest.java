@@ -15,6 +15,6 @@ class StringMessageTest {
 
     @Test
     public void toStringTest() {
-        assertEquals("Test", String.valueOf(SUT));
+        assertEquals("Test", SUT.string());
     }
 }
