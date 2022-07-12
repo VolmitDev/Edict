@@ -17,38 +17,24 @@ import java.util.function.Function;
 public class BKTreeIndexer {
 
     /**
-     * Damerau-Levenshtein Distance Algorithm.
+     * Damerau-Levenshtein Distance Algorithm.<br>
      * Based on pseudocode found at <a href="https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance">Wikipedia - DL-Distance</a>.
-     * Modified to be lenient towards abbreviations by effectively ignoring characters in the name (2nd argument) past the length of the input (1st argument).
      */
     private static final Metric<String> DAMERAU_LEVENSHTEIN_DISTANCE = (name, input) -> {
 
-
-        // Custom modification to favour initial letters of input
-        // TODO: DL-Distance Optimization Fix
-        int l2 = Math.min(input.length(), name.length());
-
-        if (l2 == 0) {
-            return Integer.MAX_VALUE;
-        }
-
-        // Debug System.out.println(input + " - " + name);
-
-        //// Original algorithm
-
-        Integer[][] map = new Integer[input.length()][l2];
+        Integer[][] map = new Integer[input.length()][name.length()];
 
         for (int i = 0; i < input.length(); i++) {
             map[i][0] = i;
         }
 
-        for (int i = 0; i < l2; i++) {
+        for (int i = 0; i < name.length(); i++) {
             map[0][i] = i;
         }
 
         int cost;
         for (int i = 1; i < input.length(); i++) {
-            for (int j = 1; j < l2; j++) {
+            for (int j = 1; j < name.length(); j++) {
                 if (input.charAt(i) == name.charAt(j)) {
                     cost = 0;
                 } else {
@@ -70,13 +56,7 @@ public class BKTreeIndexer {
             }
         }
 
-        // Debug for (int i = 0; i < map.length; i++) {
-        // Debug     System.out.println(i + " " + Arrays.toString(map[i]));
-        // Debug }
-
-        // Debug System.out.println(map[input.length() - 1][l2 - 1]);
-
-        return (int) map[input.length() - 1][l2 - 1];
+        return (int) map[input.length() - 1][name.length() - 1];
     };
 
     /**
@@ -85,11 +65,21 @@ public class BKTreeIndexer {
     private static final Metric<VCommandable> DLD_EDICT_ADAPTER = (vClass, input) -> {
 
         // Min distance (best)
-        OptionalInt result = vClass.allNames().stream().mapToInt(name -> DAMERAU_LEVENSHTEIN_DISTANCE.distance(input.name(), name)).min();
+        OptionalInt result = vClass.allNames().stream().mapToInt(name -> {
+            if (name.equals(input.name())) {
+                return 0;
+            } else if (name.startsWith(input.name())) {
+                return 1;
+            } else if (input.name().startsWith(name)) {
+                return 2;
+            } else {
+                return DAMERAU_LEVENSHTEIN_DISTANCE.distance(input.name(), name);
+            }
+        }).min();
 
         // Null result
         if (result.isEmpty()) {
-            throw new IllegalArgumentException("Second argument has no names!");
+            throw new IllegalArgumentException("First argument has no names!");
         }
 
         return result.getAsInt();
@@ -137,7 +127,7 @@ public class BKTreeIndexer {
         if (matches.isEmpty()) {
             return new ArrayList<>();
         } else {
-            int bestMatch = matches.stream().mapToInt(BkTreeSearcher.Match::getDistance).max().orElse(-1);
+            int bestMatch = matches.stream().mapToInt(BkTreeSearcher.Match::getDistance).min().orElse(-1);
             return matches.stream().filter(match -> match.getDistance() == bestMatch).map(match -> (VCommandable) match.getMatch()).toList();
         }
     }
