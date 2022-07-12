@@ -31,7 +31,7 @@ public class SystemUser implements User {
 
     @Override
     public void send(@NotNull Message message) {
-        System.out.println(message);
+        System.out.println(message.string());
     }
 
     /**
