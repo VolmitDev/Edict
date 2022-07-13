@@ -71,7 +71,7 @@ import java.util.function.Consumer;
  *  <li>{@link EdictBuilder#permissionFactory(BiFunction)} permission factory to create permissions<br>
  *      By default, uses {@link #defaultPermissionFactory}</li>
  *  <li>{@link EdictBuilder#parameterHandler(ParameterHandler)} / {@link EdictBuilder#parameterHandlers(ParameterHandlers)} handlers for custom parameter types<br>
- *      By default, features all parameter handlers in {@link #defaultParameterHandlers}</li>
+ *      By default, features all parameter handlers in {@link #defaultParameterHandlers} (standard Java types)</li>
  *  <li>{@link EdictBuilder#contextHandler(ContextHandler)} / {@link EdictBuilder#contextHandlers(ContextHandlers)} handlers for custom context types<br>
  *      By default, there are no context handlers</li>
  * </ul>
