@@ -197,7 +197,7 @@ public class Edict {
     }
 
     /**
-     * Construct Edict.
+     * Construct Edict. Recommend using {@link #builder(Object, Object...)} instead.
      * @param roots the root command classes
      * @param systemUser the user to send system messages to
      * @param syncRunner the consumer that takes runnable objects that must be run sync
@@ -209,7 +209,7 @@ public class Edict {
      * or if the {@link ContextHandler} for any of the contextual parameter of any methods of the {@link #roots} or any of its children is not registered
      */
     @Builder
-    private Edict(
+    public Edict(
             @NotNull List<Object> roots,
             @NotNull SystemUser systemUser,
             @NotNull Consumer<Runnable> syncRunner,
