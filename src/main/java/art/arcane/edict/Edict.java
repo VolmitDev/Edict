@@ -30,10 +30,28 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-// TODO: Make command structure example in readme.
-// TODO: Colored text
-// TODO: Add auto-completions / suggestions
-// TODO: Test help
+/*
+    TODO: Command structure in README.
+    Can also refer to classes in test.java.art.arcane.edict.testconstruct,
+    but then they would need to be cleaned up somewhat, and more examples should be added.
+
+    TODO: Colored text
+    1. Make color construct
+    2. Make gradient construct
+    3. Define abstract color scheme for end-user configurability
+    4. Apply colors in commands
+    5. Apply gradients in post, perhaps, since adding that manually everywhere is a pain
+
+    TODO: Add auto-completions / suggestions
+    If command ends without a space -> complete current term
+    If command ends with a space -> give all options for next term
+    Make a pipeline through this class. Generalize steps involved to prevent code duplication with #command.
+
+    TODO: Test help
+    1. Make a construct for user output which functions as an example and as a way to test
+    2. Define a way to show clickable and hover-able content in there
+    3. Try it out :)
+*/
 /**
  * <h1>Edict</h1>
  * <i>A Command System by Arcane Arts</i><br><br>
