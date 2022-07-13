@@ -115,8 +115,8 @@ public class BKTreeIndexer {
 
         // Retrieve matches from tree.
         Set<BkTreeSearcher.Match<? extends VCommandable>> matches = searcher.search(
-                new BKTreeIndexable(key),
-                (int) Math.round((key.length() * (1 - matchThreshold))) + 1
+                new BKTreeIndexable(key, new String[0]),
+                (int) Math.round((key.length() * (1 - matchThreshold)))
         );
 
         // Apply permissions
@@ -135,7 +135,7 @@ public class BKTreeIndexer {
      * Placeholder class for a VCommandable
      * @param name the name of the search input
      */
-    private record BKTreeIndexable(@NotNull String name) implements VCommandable {
+    protected record BKTreeIndexable(@NotNull String name, @NotNull String[] aliases) implements VCommandable {
 
         @Override
         public @NotNull String name() {
@@ -144,7 +144,7 @@ public class BKTreeIndexer {
 
         @Override
         public @NotNull String[] aliases() {
-            throw new NotImplementedException();
+            return aliases;
         }
 
         /**
