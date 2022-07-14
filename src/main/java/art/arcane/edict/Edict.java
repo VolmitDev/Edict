@@ -30,10 +30,28 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-// TODO: Make command structure example in readme.
-// TODO: Colored text
-// TODO: Add auto-completions / suggestions
-// TODO: Test help
+/*
+    TODO: Command structure in README.
+    Can also refer to classes in test.java.art.arcane.edict.testconstruct,
+    but then they would need to be cleaned up somewhat, and more examples should be added.
+
+    TODO: Colored text
+    1. Make color construct
+    2. Make gradient construct
+    3. Define abstract color scheme for end-user configurability
+    4. Apply colors in commands
+    5. Apply gradients in post, perhaps, since adding that manually everywhere is a pain
+
+    TODO: Add auto-completions / suggestions
+    If command ends without a space -> complete current term
+    If command ends with a space -> give all options for next term
+    Make a pipeline through this class. Generalize steps involved to prevent code duplication with #command.
+
+    TODO: Test help
+    1. Make a construct for user output which functions as an example and as a way to test
+    2. Define a way to show clickable and hover-able content in there
+    3. Try it out :)
+*/
 /**
  * <h1>Edict</h1>
  * <i>A Command System by Arcane Arts</i><br><br>
@@ -53,7 +71,7 @@ import java.util.function.Consumer;
  *  <li>{@link EdictBuilder#permissionFactory(BiFunction)} permission factory to create permissions<br>
  *      By default, uses {@link #defaultPermissionFactory}</li>
  *  <li>{@link EdictBuilder#parameterHandler(ParameterHandler)} / {@link EdictBuilder#parameterHandlers(ParameterHandlers)} handlers for custom parameter types<br>
- *      By default, features all parameter handlers in {@link #defaultParameterHandlers}</li>
+ *      By default, features all parameter handlers in {@link #defaultParameterHandlers} (standard Java types)</li>
  *  <li>{@link EdictBuilder#contextHandler(ContextHandler)} / {@link EdictBuilder#contextHandlers(ContextHandlers)} handlers for custom context types<br>
  *      By default, there are no context handlers</li>
  * </ul>
@@ -197,7 +215,7 @@ public class Edict {
     }
 
     /**
-     * Construct Edict.
+     * Construct Edict. Recommend using {@link #builder(Object, Object...)} instead.
      * @param roots the root command classes
      * @param systemUser the user to send system messages to
      * @param syncRunner the consumer that takes runnable objects that must be run sync
@@ -209,7 +227,7 @@ public class Edict {
      * or if the {@link ContextHandler} for any of the contextual parameter of any methods of the {@link #roots} or any of its children is not registered
      */
     @Builder
-    private Edict(
+    public Edict(
             @NotNull List<Object> roots,
             @NotNull SystemUser systemUser,
             @NotNull Consumer<Runnable> syncRunner,

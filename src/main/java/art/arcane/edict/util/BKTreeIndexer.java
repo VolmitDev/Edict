@@ -13,14 +13,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.function.Function;
 
-// TODO: Unit test
 public class BKTreeIndexer {
 
     /**
      * Damerau-Levenshtein Distance Algorithm.<br>
      * Based on pseudocode found at <a href="https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance">Wikipedia - DL-Distance</a>.
      */
-    private static final Metric<String> DAMERAU_LEVENSHTEIN_DISTANCE = (name, input) -> {
+    protected static final Metric<String> DAMERAU_LEVENSHTEIN_DISTANCE = (name, input) -> {
 
         Integer[][] map = new Integer[input.length()][name.length()];
 
@@ -62,7 +61,7 @@ public class BKTreeIndexer {
     /**
      * Adapter for {@link #DAMERAU_LEVENSHTEIN_DISTANCE} for {@link VCommandable} constructs.
      */
-    private static final Metric<VCommandable> DLD_EDICT_ADAPTER = (vClass, input) -> {
+    protected static final Metric<VCommandable> DLD_EDICT_ADAPTER = (vClass, input) -> {
 
         // Min distance (best)
         OptionalInt result = vClass.allNames().stream().mapToInt(name -> {
@@ -70,8 +69,8 @@ public class BKTreeIndexer {
                 return 0;
             } else if (name.startsWith(input.name())) {
                 return 1;
-            } else if (input.name().startsWith(name)) {
-                return 2;
+//            } else if (input.name().startsWith(name)) {
+//                return 2;
             } else {
                 return DAMERAU_LEVENSHTEIN_DISTANCE.distance(input.name(), name);
             }
@@ -88,12 +87,12 @@ public class BKTreeIndexer {
     /**
      * BK-Tree (<a href="https://github.com/gtri/bk-tree">GitHub</a>) for {@link VCommandable} elements.
      */
-    private final MutableBkTree<VCommandable> bkTree = new MutableBkTree<>(DLD_EDICT_ADAPTER);
+    protected final MutableBkTree<VCommandable> bkTree = new MutableBkTree<>(DLD_EDICT_ADAPTER);
 
     /**
      * Searcher of the {@link #bkTree}.
      */
-    private final BkTreeSearcher<VCommandable> searcher = new BkTreeSearcher<>(bkTree);
+    protected final BkTreeSearcher<VCommandable> searcher = new BkTreeSearcher<>(bkTree);
 
     /**
      * Construct a tree indexer.
@@ -116,8 +115,8 @@ public class BKTreeIndexer {
 
         // Retrieve matches from tree.
         Set<BkTreeSearcher.Match<? extends VCommandable>> matches = searcher.search(
-                new BKTreeIndexable(key),
-                (int) (key.length() * matchThreshold)
+                new BKTreeIndexable(key, new String[0]),
+                (int) Math.round((key.length() * (1 - matchThreshold)))
         );
 
         // Apply permissions
@@ -136,7 +135,7 @@ public class BKTreeIndexer {
      * Placeholder class for a VCommandable
      * @param name the name of the search input
      */
-    private record BKTreeIndexable(@NotNull String name) implements VCommandable {
+    protected record BKTreeIndexable(@NotNull String name, @NotNull String[] aliases) implements VCommandable {
 
         @Override
         public @NotNull String name() {
@@ -145,7 +144,7 @@ public class BKTreeIndexer {
 
         @Override
         public @NotNull String[] aliases() {
-            throw new NotImplementedException();
+            return aliases;
         }
 
         /**
