@@ -39,7 +39,7 @@ import java.util.function.Consumer;
     1. Make color construct
     2. Make gradient construct
     3. Define abstract color scheme for end-user configurability
-    4. Apply colors in commands
+    4. Apply colors in commands & debug
     5. Apply gradients in post, perhaps, since adding that manually everywhere is a pain
 
     TODO: Add auto-completions / suggestions
@@ -284,6 +284,7 @@ public class Edict {
      * @param forceSync force the execution of this command in sync (testing)
      */
     final public void command(@NotNull String command, @NotNull User user, boolean forceSync) {
+        i(new StringMessage(user.name() + " sent command: " +  command));
         Runnable r = () -> {
 
             final String fCommand = ParameterParser.cleanCommand(command);
