@@ -104,7 +104,6 @@ public class ParameterParser {
      * @return the cleaned command
      */
     public static @NotNull String cleanCommand(@NotNull String command) {
-        command = command.strip();
         while (command.contains("  ")) {
             command = command.replace("  ", " ");
         }

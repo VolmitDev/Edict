@@ -154,12 +154,12 @@ public class BKTreeIndexer {
          */
         @Override
         public @NotNull VCommandable parent() {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public @NotNull Permission permission() {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
 
         /**
@@ -169,7 +169,7 @@ public class BKTreeIndexer {
          */
         @Override
         public @NotNull CompoundMessage getHelpFor(@NotNull User user) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
 
         @Override
