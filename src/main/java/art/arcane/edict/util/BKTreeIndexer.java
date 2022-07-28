@@ -69,8 +69,8 @@ public class BKTreeIndexer {
                 return 0;
             } else if (name.startsWith(input.name())) {
                 return 1;
-//            } else if (input.name().startsWith(name)) {
-//                return 2;
+            } else if (input.name().startsWith(name)) {
+                return 2;
             } else {
                 return DAMERAU_LEVENSHTEIN_DISTANCE.distance(input.name(), name);
             }
@@ -106,12 +106,27 @@ public class BKTreeIndexer {
      * Search the tree with some key.
      * The threshold is the percentage of the input string that has to match the name, discarding characters in the name after the length of the input string's length.
      * This is subject to rounding and - since fuzzy searching is effectively guessing - mistakes. The human mind is impossible to fully understand.
+     * Only returns the elements exceeding the matchThreshold and with the highest value in the set (equally likely solutions).
      * @param key the key
      * @param matchThreshold the percentage threshold
      * @param permissible function from a {@link VCommandable} to a boolean for whether the commandable can be run in current context
      * @return the best matching commandable objects (all with the same match value)
      */
     public @NotNull List<VCommandable> search(@NotNull String key, double matchThreshold, @NotNull Function<VCommandable, Boolean> permissible) {
+        return search(key, matchThreshold, permissible, true);
+    }
+
+    /**
+     * Search the tree with some key.
+     * The threshold is the percentage of the input string that has to match the name, discarding characters in the name after the length of the input string's length.
+     * This is subject to rounding and - since fuzzy searching is effectively guessing - mistakes. The human mind is impossible to fully understand.
+     * @param key the key
+     * @param matchThreshold the percentage threshold
+     * @param permissible function from a {@link VCommandable} to a boolean for whether the commandable can be run in current context
+     * @param forceMax force return only matches with the highest value in set. Still respects {@code matchThreshold}.
+     * @return the best matching commandable objects (all with the same match value)
+     */
+    public @NotNull List<VCommandable> search(@NotNull String key, double matchThreshold, @NotNull Function<VCommandable, Boolean> permissible, boolean forceMax) {
 
         // Retrieve matches from tree.
         Set<BkTreeSearcher.Match<? extends VCommandable>> matches = searcher.search(
@@ -126,8 +141,12 @@ public class BKTreeIndexer {
         if (matches.isEmpty()) {
             return new ArrayList<>();
         } else {
-            int bestMatch = matches.stream().mapToInt(BkTreeSearcher.Match::getDistance).min().orElse(-1);
-            return matches.stream().filter(match -> match.getDistance() == bestMatch).map(match -> (VCommandable) match.getMatch()).toList();
+            if (forceMax) {
+                int bestMatch = matches.stream().mapToInt(BkTreeSearcher.Match::getDistance).min().orElse(-1);
+                return matches.stream().filter(match -> match.getDistance() == bestMatch).map(match -> (VCommandable) match.getMatch()).toList();
+            } else {
+                return matches.stream().map(m -> (VCommandable) m.getMatch()).toList();
+            }
         }
     }
 
@@ -174,6 +193,11 @@ public class BKTreeIndexer {
 
         @Override
         public boolean run(@NotNull List<String> input, @NotNull User user) {
+            throw new NotImplementedException();
+        }
+
+        @Override
+        public @NotNull List<String> suggest(@NotNull List<String> input, @NotNull User user) {
             throw new NotImplementedException();
         }
     }

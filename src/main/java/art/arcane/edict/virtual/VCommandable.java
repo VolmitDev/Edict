@@ -1,7 +1,6 @@
 package art.arcane.edict.virtual;
 
 import art.arcane.edict.message.CompoundMessage;
-import art.arcane.edict.message.Message;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.User;
 import org.jetbrains.annotations.NotNull;
@@ -60,4 +59,13 @@ public interface VCommandable {
      * or one of the branches sent help for a command (because the command ended there).
      */
     boolean run(@NotNull List<String> input, @NotNull User user);
+
+    /**
+     * Get suggestions from this commandable. It is assumed that this is in fact the right commandable, and that the user has permission.
+     *
+     * @param input the remaining input string to parse with
+     * @param user  the user that wants suggestions
+     * @return a list of strings representing suggestions
+     */
+    @NotNull List<String> suggest(@NotNull List<String> input, @NotNull User user);
 }

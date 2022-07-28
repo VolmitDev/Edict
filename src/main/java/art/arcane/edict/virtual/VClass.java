@@ -218,6 +218,41 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
     }
 
     @Override
+    public @NotNull List<String> suggest(@NotNull List<String> input, @NotNull User user) {
+
+        // Current thing is last in line
+        if (input.isEmpty()) {
+            return allNames();
+        }
+
+        // No input string for next, just one or more spaces, so suggest all children
+        if (input.get(0).isBlank()) {
+            List<String> primarySuggestions = new ArrayList<>();
+            List<String> secondarySuggestions = new ArrayList<>();
+            for (VCommandable child : children) {
+                primarySuggestions.add(child.name());
+                secondarySuggestions.addAll(List.of(child.aliases()));
+            }
+            primarySuggestions.addAll(secondarySuggestions);
+            return primarySuggestions;
+        }
+
+        // Next input exists and is non-empty, search for next
+
+        // Get children
+        List<VCommandable> children = indexer.search(
+                input.get(0),
+                system.getSettings().matchThreshold,
+                vCommandable -> user.hasPermission(vCommandable.permission())
+        );
+
+        // Send command further downstream
+        List<String> suggestions = new ArrayList<>();
+        children.forEach(c -> suggestions.addAll(c.suggest(input.subList(1, input.size()), user)));
+        return suggestions;
+    }
+
+    @Override
     public int hashCode() {
         return name.hashCode() + command.hashCode() + instance.hashCode() + children.hashCode() + indexer.hashCode() + system.hashCode() + permission.hashCode();
     }

@@ -3,8 +3,10 @@ package art.arcane.edict.context;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,13 +31,27 @@ class ContextTest {
     @Test
     void clean() {
         Thread rr = Thread.currentThread();
-        new Thread(() -> {
-            SUT.post(5);
-            assertEquals(5, SUT.context().get(Thread.currentThread()));
-            SUT.clean();
-            assertNull(SUT.context().get(rr));
-            assertNull(SUT.context().get(Thread.currentThread()));
-        }).start();
+        AtomicReference<AssertionFailedError> e = new AtomicReference<>(null);
+        Thread t = new Thread(() -> {
+            try {
+                SUT.post(5);
+                assertEquals(5, SUT.context().get(Thread.currentThread()));
+                SUT.clean();
+                assertNotNull(SUT.context().get(rr));
+                assertNotNull(SUT.context().get(Thread.currentThread()));
+            } catch (AssertionFailedError ex) {
+                e.set(ex);
+                throw ex;
+            }
+        });
+        t.start();
+        if (e.get() != null) {
+            throw e.get();
+        }
+        t.interrupt();
+        SUT.clean();
+        assertNull(SUT.context().get(t));
+        assertNotNull(SUT.context().get(Thread.currentThread()));
     }
 
     @Test

@@ -202,6 +202,17 @@ public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNul
     public boolean run(@NotNull List<String> input, @NotNull User user) {
         throw new NotImplementedException();
     }
+
+    @Override
+    public @NotNull List<String> suggest(@NotNull List<String> input, @NotNull User user) {
+        List<String> suggestions = parameterHandler.getPossibilities(input.isEmpty() ? "" : input.get(0)).stream().map(parameterHandler::toStringForce).toList();
+        if (suggestions.isEmpty()) {
+            return allNames().stream().map(n -> n + "=").toList();
+        } else {
+            return suggestions;
+        }
+    }
+
     @Override
     public int hashCode() {
         return param.hashCode() + parameter.hashCode() + parameterHandler.hashCode() + (contextHandler != null ? contextHandler.hashCode() : 0) + system.hashCode();

@@ -111,6 +111,7 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
     @Override
     public boolean run(@NotNull List<String> input, @NotNull User user) {
         if (input.size() < params.stream().filter(p -> !(p.param().contextual() && user.canUseContext()) || !p.param().defaultValue().isBlank()).count()) {
+            // improve this by sending param-specific targeted help
             user.send(getHelpFor(user));
             return true;
         }
@@ -167,6 +168,22 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
         }
 
         return success.get();
+    }
+
+    @Override
+    public @NotNull List<String> suggest(@NotNull List<String> input, @NotNull User user) {
+        if (input.isEmpty()) {
+            return allNames();
+        }
+        List<String> suggestions = new ArrayList<>();
+        if (input.get(0).isBlank()) {
+            params.forEach(p -> suggestions.addAll(p.suggest(new ArrayList<>(), user)));
+            return suggestions;
+        }
+        ParameterParser parser = new ParameterParser(input, params, user, system);
+        parser.parse();
+        parser.getMissingInputs().forEach(p -> suggestions.addAll(p.suggest(new ArrayList<>(), user)));
+        return suggestions;
     }
 
     /**

@@ -287,7 +287,7 @@ public class Edict {
         i(new StringMessage(user.name() + " sent command: " +  command));
         Runnable r = () -> {
 
-            final String fCommand = ParameterParser.cleanCommand(command);
+            final String fCommand = ParameterParser.cleanCommand(command.strip());
 
             i(new StringMessage(user.name() + " sent command: " + fCommand));
 
@@ -334,6 +334,66 @@ public class Edict {
             new Thread(r).start();
         }
     }
+
+
+    /**
+     * Get suggestions for a command.
+     * @param command the input to get suggestions for
+     * @param user the user that wants the suggestions
+     * @param suggestionOutput the completable to send the output to when it is done
+     * @param forceSync force the execution of suggestion retrieval in sync (testing)
+     */
+    final public void suggest(@NotNull String command, @NotNull User user, @NotNull CompletableFuture<List<String>> suggestionOutput, boolean forceSync) {
+        i(new StringMessage(user.name() + " wants suggestions for command: " +  command));
+        Runnable r = () -> {
+
+            final String fCommand = ParameterParser.cleanCommand(command);
+
+            List<String> input = List.of(fCommand.split(" "));
+
+            // Blank check
+            if (input.isEmpty()) {
+                List<String> primarySuggestions = new ArrayList<>();
+                List<String> secondarySuggestions = new ArrayList<>();
+                for (VCommandable root : rootCommands) {
+                    primarySuggestions.add(root.name());
+                    secondarySuggestions.addAll(List.of(root.aliases()));
+                }
+                primarySuggestions.addAll(secondarySuggestions);
+                suggestionOutput.complete(primarySuggestions);
+                return;
+            }
+
+            d(new StringMessage("Suggesting for command: " + fCommand));
+
+            // Loop over roots
+            new UserContext().post(user);
+            new SystemContext().post(this);
+
+            List<String> suggestions = new ArrayList<>();
+            for (VCommandable root : indexer.search(input.get(0), getSettings().matchThreshold, (vCommandable -> user.hasPermission(vCommandable.permission())))) {
+                d(new StringMessage("Running root suggestions: " + ((VClass) root).instance().getClass().getSimpleName()));
+                suggestions.addAll(root.suggest(input.subList(1, input.size()), user));
+            }
+
+            if (!suggestions.isEmpty()) {
+                suggestionOutput.complete(suggestions);
+                return;
+            }
+
+            d(new StringMessage("Could not find suitable command for input: " + fCommand));
+            user.send(new StringMessage("Failed to run any commands for your input. Please try (one of): " + String.join(", ", rootCommands.stream().map(VCommandable::name).toList())));
+
+        };
+
+        if (forceSync) {
+            d(new StringMessage("Running command in forced sync. Likely for testing purposes."));
+            r.run();
+        } else {
+            new Thread(r).start();
+        }
+    }
+
 
     /**
      * Make a {@link Permission} node.
