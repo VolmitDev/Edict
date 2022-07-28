@@ -54,7 +54,7 @@ public class EDictionary implements Edicted {
     /**
      * Whether to always pick the first option or not, if multiple are possible when running a command.
      */
-    public boolean alwaysPickFirstOption;
+    public boolean alwaysPickFirstOption = false;
 
     @Command(description = "Set whether to always pick the first option or not, if multiple are possible when running a command.")
     public void setAlwaysPickFirstOption(boolean alwaysPickFirstOption) {
