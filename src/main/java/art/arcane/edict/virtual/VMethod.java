@@ -84,6 +84,15 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
     }
 
     /**
+     * Get the number of required parameters for some user.
+     * @param user the user
+     * @return the number of required parameters
+     */
+    public int getInputRequirementFor(User user) {
+        return (int) params.stream().filter(p -> p.isRequiredFor(user)).count();
+    }
+
+    /**
      * Build the required (full) command to get to this parameter.
      * @param user the user to build the command for
      * @return the command suggestion
@@ -114,7 +123,7 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
             user.send(getHelpFor(user));
             return true;
         }
-        user.send(new StringMessage("Running command " + name() + " with input: " + String.join(", ", input)));
+        user.send(new StringMessage("Running command '" + name() + "' with input: '" + String.join(", ", input) + "'"));
         ParameterParser parser = new ParameterParser(input, params, user, system);
         Object[] values = parser.parse();
 
@@ -142,7 +151,6 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
                     "Because of: " + reason));
             return true;
         }
-
 
         AtomicBoolean success = new AtomicBoolean(true);
 

@@ -2,7 +2,6 @@ package art.arcane.edict.virtual;
 
 import art.arcane.edict.Edict;
 import art.arcane.edict.testconstruct.TestCommandClass;
-import art.arcane.edict.testconstruct.TestUser;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -23,16 +22,6 @@ class VClassTest {
         assertTrue(childrenNames.contains("subcategory"));
         assertFalse(childrenNames.contains("empty"));
         assertFalse(childrenNames.contains("TestNotCommandClass"));
-    }
-
-    @Test
-    void sortAndFilterChildren() {
-        assert SUT != null;
-        List<String> commandableBracket = SUT.indexer().search("[", SYSTEM.getSettings().matchThreshold, (vCommandable -> new TestUser().hasPermission(vCommandable.permission()))).stream().map(VCommandable::name).toList();
-        List<String> commandableMatch = SUT.indexer().search("command", SYSTEM.getSettings().matchThreshold, (vCommandable -> new TestUser().hasPermission(vCommandable.permission()))).stream().map(VCommandable::name).toList();
-        assertTrue(commandableBracket.isEmpty());
-        assertEquals("command", commandableMatch.get(0));
-        assertEquals(1, commandableMatch.size());
     }
 
     @Test

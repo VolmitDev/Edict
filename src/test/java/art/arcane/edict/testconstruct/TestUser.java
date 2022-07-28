@@ -28,9 +28,9 @@ public class TestUser implements User {
 
     @Override
     public void send(@NotNull Message message) {
-        if (message instanceof StringMessage) {
-            received.add((StringMessage) message);
-            System.out.println(message.string());
+        if (message instanceof StringMessage sMessage) {
+            received.add(sMessage);
+            System.out.println(sMessage.string());
         } else {
             received.add(new StringMessage("Received non-string message"));
         }

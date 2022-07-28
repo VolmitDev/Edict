@@ -1,6 +1,7 @@
 package art.arcane.edict;
 
 import art.arcane.edict.context.UserContext;
+import art.arcane.edict.message.StringMessage;
 import art.arcane.edict.testconstruct.*;
 import org.junit.jupiter.api.Test;
 

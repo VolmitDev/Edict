@@ -11,12 +11,12 @@ import art.arcane.edict.handler.ParameterHandlers;
 import art.arcane.edict.handler.handlers.*;
 import art.arcane.edict.message.Message;
 import art.arcane.edict.message.StringMessage;
+import art.arcane.edict.parser.CommandableTraversal;
 import art.arcane.edict.permission.Permission;
 import art.arcane.edict.user.SystemUser;
 import art.arcane.edict.user.User;
 import art.arcane.edict.util.BKTreeIndexer;
 import art.arcane.edict.util.EDictionary;
-import art.arcane.edict.parser.ParameterParser;
 import art.arcane.edict.virtual.VClass;
 import art.arcane.edict.virtual.VCommandable;
 import lombok.Builder;
@@ -156,7 +156,7 @@ public class Edict {
     /**
      * Root commands
      */
-    private final List<VCommandable> rootCommands = new ArrayList<>();
+    private final List<VClass> rootCommands = new ArrayList<>();
 
     /**
      * System indexer.
@@ -284,24 +284,26 @@ public class Edict {
      * @param forceSync force the execution of this command in sync (testing)
      */
     final public void command(@NotNull String command, @NotNull User user, boolean forceSync) {
-        i(new StringMessage(user.name() + " sent command: " +  command));
+        i(new StringMessage(user.name() + " sent command: '" +  command + "'"));
         Runnable r = () -> {
 
-            final String fCommand = ParameterParser.cleanCommand(command);
-
-            i(new StringMessage(user.name() + " sent command: " + fCommand));
-
-            List<String> input = List.of(fCommand.split(" "));
-
-            // Blank check
-            if (input.isEmpty()) {
+            if (command.isBlank()) {
                 for (VCommandable root : rootCommands) {
                     user.send(root.getHelpFor(user));
                 }
                 return;
             }
 
-            d(new StringMessage("Running command: " + fCommand));
+            CommandableTraversal best = null;
+            for (VClass rootCommand : rootCommands) {
+                d(new StringMessage("Finding: '" + rootCommand.name() + "' with '" + command + "'"));
+                CommandableTraversal traversal = CommandableTraversal.find(rootCommand, command, user, this);
+                if (best == null || traversal.depth() > best.depth()) {
+                    best = traversal;
+                }
+            }
+
+            assert best != null;
 
             // Loop over roots
             new UserContext().post(user);
@@ -310,21 +312,17 @@ public class Edict {
             // Future
             CompletableFuture<String> future = completableCommandsRegistry.getCompletableFor(user);
             if (future != null) {
-                d(new StringMessage(user.name() + " completed command with " + String.join(" ", input)));
+                d(new StringMessage(user.name() + " completed command with " + String.join(" ", best.input())));
                 future.complete(command);
                 return;
             }
 
-            for (VCommandable root : indexer.search(input.get(0), getSettings().matchThreshold, (vCommandable -> user.hasPermission(vCommandable.permission())))) {
-                d(new StringMessage("Running root: " + ((VClass) root).instance().getClass().getSimpleName()));
-                if (root.run(input.subList(1, input.size()), user)) {
-                    return;
-                }
+            if (!best.result().run(
+                    best.remaining(),
+                    user
+            )) {
+                user.send(new StringMessage("Failed to run your command."));
             }
-
-            d(new StringMessage("Could not find suitable command for input: " + fCommand));
-            user.send(new StringMessage("Failed to run any commands for your input. Please try (one of): " + String.join(", ", rootCommands.stream().map(VCommandable::name).toList())));
-
         };
 
         if (forceSync) {

@@ -95,28 +95,6 @@ public class ParameterParser {
     }
 
     /**
-     * Clean the input command.
-     * Performs the following actions:<br>
-     *  - Remove all double spaces<br>
-     *  - Remove spaces before equal signs<br>
-     *  - Remove all double ='s and -'s
-     * @param command the input command
-     * @return the cleaned command
-     */
-    public static @NotNull String cleanCommand(@NotNull String command) {
-        while (command.contains("  ")) {
-            command = command.replace("  ", " ");
-        }
-        while (command.contains("==")) {
-            command = command.replace("==", "=");
-        }
-        while (command.contains("--")) {
-            command = command.replace("--", "-");
-        }
-        return command.replace(" =", "=");
-    }
-
-    /**
      * Parse inputs.
      * @return an array of parameter values, or {@code null} if insufficient input was provided.
      * In the case it is {@code null}, {@link #missingInputs} is non-empty and shows which parameters are missing.

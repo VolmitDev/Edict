@@ -193,28 +193,8 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
 
     @Override
     public boolean run(@NotNull List<String> input, @NotNull User user) {
-
-        // Send help when this is the final node
-        if (input.isEmpty()) {
-            user.send(getHelpFor(user));
-            return true;
-        }
-
-        // Get children
-        List<VCommandable> children = indexer.search(
-                input.get(0),
-                system.getSettings().matchThreshold,
-                vCommandable -> user.hasPermission(vCommandable.permission())
-        );
-
-        // Send command further downstream
-        for (VCommandable child : children) {
-            if (child.run(input.subList(1, input.size()), user)) {
-                return true;
-            }
-        }
-
-        return false;
+        user.send(getHelpFor(user));
+        return true;
     }
 
     @Override
