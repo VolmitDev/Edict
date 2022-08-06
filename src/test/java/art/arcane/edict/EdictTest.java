@@ -5,6 +5,7 @@ import art.arcane.edict.testconstruct.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,7 +14,6 @@ public class EdictTest {
     /*
         TODO: Complex command tests
         TODO: Ambiguous command tests (close calls)
-        TODO: Suggestion tests
      */
 
     public static final Edict SUT = Edict.builder(new TestCommandClass(), new TestCommandClassContext(), new TestCommandCategory())
@@ -50,5 +50,29 @@ public class EdictTest {
         SUT.command("rootcommand", TESTUSER, true);
         assertTrue(TESTUSER.received.size() > 0);
         assertEquals("ran root command", TESTUSER.received.get(TESTUSER.received.size() - 1).string());
+    }
+
+    @Test
+    void testSuggestionsSimple() {
+        assertEquals("test", suggestionOne("te"));
+    }
+
+    @Test
+    void testSuggestionComplex() {
+        // TODO: Fix this because the first one doesn't match anything because of the matching threshold requirement
+        assertEquals("rootcommand", suggestionOne("roco"));
+        assertEquals("context", suggestionOne("con"));
+    }
+
+    @Test
+    void testSuggestionDeep() {
+        // TODO: Fix this because the space at the end isn't registered
+        assertEquals("method", suggestionOne("test subc "));
+    }
+
+    String suggestionOne(String input) {
+        List<String> suggestions = new ArrayList<>();
+        SUT.suggest(input, TESTUSER, suggestions::addAll, true);
+        return suggestions.get(0);
     }
 }

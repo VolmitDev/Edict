@@ -343,10 +343,10 @@ public class Edict {
      * Get suggestions for a command.
      * @param command the input to get suggestions for
      * @param user the user that wants the suggestions
-     * @param suggestionOutput the completable to send the output to when it is done
+     * @param suggestionOutput the consumer to send the output to when it is done
      * @param forceSync force the execution of suggestion retrieval in sync (testing)
      */
-    final public void suggest(@NotNull String command, @NotNull User user, @NotNull CompletableFuture<List<String>> suggestionOutput, boolean forceSync) {
+    final public void suggest(@NotNull String command, @NotNull User user, @NotNull Consumer<List<String>> suggestionOutput, boolean forceSync) {
         i(new StringMessage(user.name() + " wants suggestions for command: " +  command));
         Runnable r = () -> {
 
@@ -363,7 +363,7 @@ public class Edict {
                     secondarySuggestions.addAll(root.getAliases());
                 }
                 primarySuggestions.addAll(secondarySuggestions);
-                suggestionOutput.complete(primarySuggestions);
+                suggestionOutput.accept(primarySuggestions);
                 return;
             }
 
@@ -380,7 +380,7 @@ public class Edict {
             }
 
             if (!suggestions.isEmpty()) {
-                suggestionOutput.complete(suggestions);
+                suggestionOutput.accept(suggestions);
                 return;
             }
 
