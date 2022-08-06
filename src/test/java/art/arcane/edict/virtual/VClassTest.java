@@ -1,6 +1,7 @@
 package art.arcane.edict.virtual;
 
 import art.arcane.edict.Edict;
+import art.arcane.edict.EdictTest;
 import art.arcane.edict.testconstruct.TestCommandClass;
 import art.arcane.edict.testconstruct.TestUser;
 import org.junit.jupiter.api.Test;
@@ -11,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class VClassTest {
 
-    final Edict SYSTEM = Edict.builder(null).build();
+    final Edict SYSTEM = EdictTest.SUT;
     final VClass SUT = VClass.fromInstance(new TestCommandClass(), null, SYSTEM);
 
     @Test

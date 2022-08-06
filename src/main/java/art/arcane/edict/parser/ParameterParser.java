@@ -20,6 +20,12 @@ import java.util.concurrent.*;
  * Parameter parser.
  */
 public class ParameterParser {
+
+    /**
+     * Whether to dump or not.
+     */
+    private static final boolean ENABLE_DEBUG = false;
+
     /**
      * Input strings.
      */
@@ -369,17 +375,18 @@ public class ParameterParser {
      * Dump all data of this parser at any given time.
      */
     private void dump(String stage) {
-        system.d(new StringMessage(stage + " Dump"));
-        system.d(new StringMessage("User: " + user.name()));
-        system.d(new StringMessage("Input: " + String.join(" / ", input)));
-        system.d(new StringMessage("Params: " + String.join(" / ", remainingParams.stream().map(VParam::name).toList())));
-        system.d(new StringMessage("Values: " + String.join(" / ", values.keySet().stream().map(k -> k.name() + " > " + k.parameterHandler().toStringForce(values.get(k))).toList())));
-        system.d(new StringMessage("Inputs: " + String.join(" / " + inputs.keySet().stream().map(k -> k.name() + " = " + values.get(k)))));
-        system.d(new StringMessage("BadArgs: " + String.join(" / ", badArgs.keySet().stream().map(k -> k + " > " + badArgs.get(k)).toList())));
-        system.d(new StringMessage("DashArgs: " + String.join(" / " + dashBooleanArgs)));
-        system.d(new StringMessage("KeylessArgs: " + String.join(" / " + keylessArgs)));
-        system.d(new StringMessage("KeyedArgs: " + String.join(" / " + keyedArgs)));
-        system.d(new StringMessage("MissingInputs: " + String.join(" / " + missingInputs.stream().map(VParam::name).toList()) + "\n"));
+        if (!ENABLE_DEBUG) { return; }
+        system.d(new StringMessage(stage + " Dump for user: " + user.name()));
+        if (!input.isEmpty()) { system.d(new StringMessage("Input: " + String.join(" / ", input))); }
+        if (!remainingParams.isEmpty()) { system.d(new StringMessage("Params: " + String.join(" / ", remainingParams.stream().map(VParam::name).toList()))); }
+        if (!values.isEmpty()) { system.d(new StringMessage("Values: " + String.join(" / ", values.keySet().stream().map(k -> k.name() + " > " + k.parameterHandler().toStringForce(values.get(k))).toList()))); }
+        if (!inputs.isEmpty()) { system.d(new StringMessage("Inputs: " + String.join(" / " + inputs.keySet().stream().map(k -> k.name() + " = " + values.get(k))))); }
+        if (!badArgs.isEmpty()) { system.d(new StringMessage("BadArgs: " + String.join(" / ", badArgs.keySet().stream().map(k -> k + " > " + badArgs.get(k)).toList()))); }
+        if (!dashBooleanArgs.isEmpty()) { system.d(new StringMessage("DashArgs: " + String.join(" / " + dashBooleanArgs))); }
+        if (!keylessArgs.isEmpty()) { system.d(new StringMessage("KeylessArgs: " + String.join(" / " + keylessArgs))); }
+        if (!keyedArgs.isEmpty()) { system.d(new StringMessage("KeyedArgs: " + String.join(" / " + keyedArgs))); }
+        if (!missingInputs.isEmpty()) { system.d(new StringMessage("MissingInputs: " + String.join(" / " + missingInputs.stream().map(VParam::name).toList()) + "\n")); }
+        system.d(new StringMessage("End " + stage + " Dump"));
     }
 
     /**

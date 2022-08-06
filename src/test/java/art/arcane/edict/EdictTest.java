@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class EdictTest {
+public class EdictTest {
 
     /*
         TODO: Complex command tests
@@ -15,7 +15,7 @@ class EdictTest {
         TODO: Test command as root
      */
 
-    final Edict SUT = Edict.builder(new TestCommandClass(), new TestCommandClassContext())
+    public static final Edict SUT = Edict.builder(new TestCommandClass(), new TestCommandClassContext())
             .contextHandler(new TestContextValueContextHandler())
             .parameterHandler(new TestContextValueParameterHandler())
             .build();
