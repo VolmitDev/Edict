@@ -123,8 +123,8 @@ public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNul
         String hoverText = name();
         List<String> onRunCommand = buildCommand(user);
 
-        if (aliases().length != 0) {
-            hoverText += " (" + String.join(", ", aliases()) + ")\n";
+        if (!getAliases().isEmpty()) {
+            hoverText += " (" + String.join(", ", getAliases()) + ")\n";
         }
 
         if (!param().description().isBlank()) {
@@ -211,6 +211,13 @@ public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNul
         } else {
             return suggestions;
         }
+    }
+
+    @Override
+    public void networkString(@NotNull StringBuilder builder, @NotNull String indent, @NotNull String currentIndent) {
+        builder.append("\n").append(currentIndent).append("> ");
+        appendNamesNetworkString(builder);
+        // TODO: Append details
     }
 
     @Override

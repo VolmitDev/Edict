@@ -19,11 +19,13 @@ import art.arcane.edict.util.EDictionary;
 import art.arcane.edict.parser.ParameterParser;
 import art.arcane.edict.virtual.VClass;
 import art.arcane.edict.virtual.VCommandable;
+import art.arcane.edict.virtual.VMethod;
 import lombok.Builder;
 import lombok.Singular;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -154,6 +156,12 @@ public class Edict {
     private ContextHandlers contextHandlers = new ContextHandlers();
 
     /**
+     * Indent for {@link #networkString()}.
+     */
+    @Builder.Default
+    private String networkStringIndent = "  ";
+
+    /**
      * Root commands
      */
     private final List<VCommandable> rootCommands = new ArrayList<>();
@@ -171,7 +179,7 @@ public class Edict {
     /**
      * Build Edict.
      * @param mainRoot the main command root of the system. Can be {@code null}, in which case none are registered.
-     * @param roots other command roots
+     * @param otherRoots other command roots
      * @return the builder
      */
     public static EdictBuilder builder(@Nullable Object mainRoot, @NotNull Object... otherRoots) {
@@ -234,7 +242,8 @@ public class Edict {
             @NotNull EDictionary settings,
             @NotNull BiFunction<@Nullable Permission, @NotNull String, @NotNull Permission> permissionFactory,
             @NotNull ParameterHandlers parameterHandlers,
-            @NotNull ContextHandlers contextHandlers
+            @NotNull ContextHandlers contextHandlers,
+            @NotNull String networkStringIndent
     ) throws NullPointerException {
         this.roots = roots;
         this.systemUser = systemUser;
@@ -243,19 +252,28 @@ public class Edict {
         this.permissionFactory = permissionFactory;
         this.parameterHandlers = parameterHandlers;
         this.contextHandlers = contextHandlers;
+        this.networkStringIndent = networkStringIndent;
 
         // Command Roots
         for (Object root : roots) {
-            VClass vRoot = VClass.fromInstance(root, null, this);
-            if (vRoot == null) {
-                w(new StringMessage("Could not register root " + root.getClass().getSimpleName() + "!"));
-                continue;
+            VCommandable vRoot;
+            if (root instanceof Method method) {
+                vRoot = VMethod.fromInstance(method, null, this);
+            } else {
+                vRoot = VClass.fromInstance(root, null, this);
+                if (vRoot == null) {
+                    w(new StringMessage("Could not register root category: " + root.getClass().getSimpleName() + " due to circular reference!"));
+                    continue;
+                }
             }
             rootCommands.add(vRoot);
         }
 
         // Indexer
         indexer.addAll(rootCommands);
+
+        // Print
+        i(new StringMessage(networkString()));
     }
 
     /**
@@ -347,7 +365,7 @@ public class Edict {
                 List<String> secondarySuggestions = new ArrayList<>();
                 for (VCommandable root : rootCommands) {
                     primarySuggestions.add(root.name());
-                    secondarySuggestions.addAll(List.of(root.aliases()));
+                    secondarySuggestions.addAll(root.getAliases());
                 }
                 primarySuggestions.addAll(secondarySuggestions);
                 suggestionOutput.complete(primarySuggestions);
@@ -453,5 +471,29 @@ public class Edict {
      */
     final public void runSync(Runnable runnable) {
         syncRunner.accept(runnable);
+    }
+
+    /**
+     * String representation of the command network.
+     * @return a string representing the command network.
+     */
+    final public @NotNull String networkString() {
+        StringBuilder builder = new StringBuilder();
+        int rootCats = 0;
+        int rootComs = 0;
+        for (VCommandable rootCommand : rootCommands) {
+            if (rootCommand instanceof VClass) {
+                rootCats++;
+            } else {
+                rootComs++;
+            }
+        }
+        builder.append("Command Network\n")
+                .append("Name [alias, alias, alias] ((sub)categories | commands)").append("\n")
+                .append("<root> (").append(rootCats).append(" | ").append(rootComs).append(")");
+        for (VCommandable rootCommand : rootCommands) {
+            rootCommand.networkString(builder, networkStringIndent, networkStringIndent);
+        }
+        return builder.toString();
     }
 }

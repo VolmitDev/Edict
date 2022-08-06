@@ -161,7 +161,7 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
     }
 
     @Override
-    public String[] aliases() {
+    public @NotNull String @NotNull [] aliases() {
         return command.aliases();
     }
 
@@ -231,7 +231,7 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
             List<String> secondarySuggestions = new ArrayList<>();
             for (VCommandable child : children) {
                 primarySuggestions.add(child.name());
-                secondarySuggestions.addAll(List.of(child.aliases()));
+                secondarySuggestions.addAll(child.getAliases());
             }
             primarySuggestions.addAll(secondarySuggestions);
             return primarySuggestions;
@@ -250,6 +250,25 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
         List<String> suggestions = new ArrayList<>();
         children.forEach(c -> suggestions.addAll(c.suggest(input.subList(1, input.size()), user)));
         return suggestions;
+    }
+
+    @Override
+    public void networkString(@NotNull StringBuilder builder, @NotNull String indent, @NotNull String currentIndent) {
+        builder.append("\n").append(currentIndent).append("= ");
+        appendNamesNetworkString(builder);
+        int subCats = 0;
+        int subComs = 0;
+        for (VCommandable child : children) {
+            if (child instanceof VClass) {
+                subCats++;
+            } else {
+                subComs++;
+            }
+        }
+        builder.append("(").append(subCats).append(" | ").append(subComs).append(")");
+        for (VCommandable child : children) {
+            child.networkString(builder, indent, currentIndent + indent);
+        }
     }
 
     @Override

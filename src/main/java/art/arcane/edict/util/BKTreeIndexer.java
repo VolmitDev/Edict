@@ -173,12 +173,12 @@ public class BKTreeIndexer {
          */
         @Override
         public @NotNull VCommandable parent() {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public @NotNull Permission permission() {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
 
         /**
@@ -188,17 +188,22 @@ public class BKTreeIndexer {
          */
         @Override
         public @NotNull CompoundMessage getHelpFor(@NotNull User user) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public boolean run(@NotNull List<String> input, @NotNull User user) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public @NotNull List<String> suggest(@NotNull List<String> input, @NotNull User user) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void networkString(@NotNull StringBuilder builder, @NotNull String indent, @NotNull String currentIndent) {
+            throw new UnsupportedOperationException();
         }
     }
 }

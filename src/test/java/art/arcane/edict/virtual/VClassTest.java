@@ -44,6 +44,6 @@ class VClassTest {
     @Test
     void aliases() {
         assert SUT != null;
-        assertTrue(List.of(SUT.aliases()).contains("alias"));
+        assertTrue(SUT.getAliases().contains("alias"));
     }
 }

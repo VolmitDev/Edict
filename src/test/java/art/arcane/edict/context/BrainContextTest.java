@@ -21,7 +21,7 @@ public class BrainContextTest {
     };
 
     @Test
-    public void testBrain() {
+    public void testBrain() throws InterruptedException {
         Brain brain = new Brain(50, "male");
         Brain brain2 = new Brain(30, "female");
         SUT.post(brain);
@@ -31,6 +31,7 @@ public class BrainContextTest {
             SUT.clean();
         });
         thread.start();
+        Thread.sleep(20);
         assertEquals(SUT.get(), SUT.get());
         SUT.clean();
         assertNull(SUT.context().get(thread));

@@ -27,7 +27,26 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @param params the parameters of this method {@link VParam}s
  * @param system the command system
  */
-public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull Method method, @NotNull List<VParam> params, @NotNull Permission permission, @NotNull Edict system) implements VCommandable {
+public record VMethod(@NotNull Command command, @Nullable VClass parent, @NotNull Method method, @NotNull List<VParam> params, @NotNull Permission permission, @NotNull Edict system) implements VCommandable {
+
+    public static VCommandable fromInstance(Method method, Object instance, Edict system) {
+        if (!method.isAnnotationPresent(Command.class)) {
+            system.d(new StringMessage("#" + method.getName() + "() not registered because not annotated by @Command"));
+            throw new MissingResourceException("@Command annotation not present on method " + method.getName(), method.getName(), "@Command");
+        }
+        method.setAccessible(true);
+        Command annotation = method.getDeclaredAnnotation(Command.class);
+        VMethod vMethod = new VMethod(
+                annotation,
+                null,
+                method,
+                new ArrayList<>(),
+                system.makePermission(null, annotation.permission()),
+                system
+        );
+        vMethod.params().addAll(VParam.paramsFromMethod(vMethod, method, system));
+        return vMethod;
+    }
 
     @Override
     public @NotNull String name() {
@@ -35,7 +54,7 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
     }
 
     @Override
-    public String[] aliases() {
+    public @NotNull String @NotNull [] aliases() {
         return command.aliases();
     }
 
@@ -52,8 +71,8 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
         List<String> onRunCommand = buildCommand(user);
         CompoundMessage result;
 
-        if (aliases().length != 0) {
-            hoverText += " (" + String.join(", ", aliases()) + ")\n";
+        if (!getAliases().isEmpty()) {
+            hoverText += " (" + String.join(", ", getAliases()) + ")\n";
         }
 
         if (!command.description().isBlank()) {
@@ -184,6 +203,21 @@ public record VMethod(@NotNull Command command, @NotNull VClass parent, @NotNull
         parser.parse();
         parser.getMissingInputs().forEach(p -> suggestions.addAll(p.suggest(new ArrayList<>(), user)));
         return suggestions;
+    }
+
+    @Override
+    public void networkString(@NotNull StringBuilder builder, @NotNull String indent, @NotNull String currentIndent) {
+        builder.append("\n").append(currentIndent).append("- ");
+        appendNamesNetworkString(builder);
+        if (params.isEmpty()) {
+            builder.append("(0)");
+            return;
+        }
+
+        builder.append("(").append(params.size()).append(")");
+        for (VParam param : params) {
+            param.networkString(builder, indent, currentIndent + indent);
+        }
     }
 
     /**

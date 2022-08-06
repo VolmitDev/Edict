@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 public interface VCommandable {
 
@@ -21,7 +22,15 @@ public interface VCommandable {
      * List of aliases for this commandable.
      * @return list of aliases for this commandable
      */
-    @NotNull String[] aliases();
+    @NotNull String @NotNull [] aliases();
+
+    /**
+     * List of aliases, filtered for empty entries.
+     * @return list of aliases for this commandable
+     */
+    default @NotNull List<String> getAliases() {
+        return Stream.of(aliases()).filter(a -> !a.isEmpty()).toList();
+    };
 
     /**
      * Parent commandable.
@@ -35,7 +44,7 @@ public interface VCommandable {
      */
     default @NotNull List<String> allNames() {
         List<String> names = new ArrayList<>(Collections.singletonList(name()));
-        names.addAll(List.of(aliases()));
+        names.addAll(getAliases());
         return names;
     }
 
@@ -68,4 +77,23 @@ public interface VCommandable {
      * @return a list of strings representing suggestions
      */
     @NotNull List<String> suggest(@NotNull List<String> input, @NotNull User user);
+
+    /**
+     * Append the details of this commandable to the network representation string buider.
+     * @param builder the builder
+     * @param indent the indentation to add when going a layer deeper
+     * @param currentIndent the current indentation
+     */
+    void networkString(@NotNull StringBuilder builder, @NotNull String indent, @NotNull String currentIndent);
+
+    /**
+     * Appends the name(s) of this commandable to the network string.
+     * @param builder the string builder building the network
+     */
+    default void appendNamesNetworkString(@NotNull StringBuilder builder) {
+        builder.append(name()).append(" ");
+        if (!getAliases().isEmpty()) {
+            builder.append("[").append(String.join(", ", getAliases())).append("] ");
+        }
+    }
 }
