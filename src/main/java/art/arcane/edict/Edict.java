@@ -174,12 +174,12 @@ public class Edict {
      * @param roots other command roots
      * @return the builder
      */
-    public static EdictBuilder builder(@Nullable Object mainRoot, @NotNull Object... roots) {
+    public static EdictBuilder builder(@Nullable Object mainRoot, @NotNull Object... otherRoots) {
         List<Object> r = new ArrayList<>();
         if (mainRoot != null) {
             r.add(mainRoot);
         }
-        r.addAll(List.of(roots));
+        r.addAll(List.of(otherRoots));
         return new EdictBuilder().roots(r);
     }
 
@@ -243,16 +243,6 @@ public class Edict {
         this.permissionFactory = permissionFactory;
         this.parameterHandlers = parameterHandlers;
         this.contextHandlers = contextHandlers;
-
-        // System settings root
-        if (settings.settingsAsCommands) {
-            VClass vRoot = VClass.fromInstance(settings, null, this);
-            if (vRoot == null) {
-                w(new StringMessage("Could not register settings commands!"));
-            } else {
-                rootCommands.add(vRoot);
-            }
-        }
 
         // Command Roots
         for (Object root : roots) {
