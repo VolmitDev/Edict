@@ -256,15 +256,10 @@ public class Edict {
 
         // Command Roots
         for (Object root : roots) {
-            VCommandable vRoot;
-            if (root instanceof Method method) {
-                vRoot = VMethod.fromInstance(method, null, this);
-            } else {
-                vRoot = VClass.fromInstance(root, null, this);
-                if (vRoot == null) {
-                    w(new StringMessage("Could not register root category: " + root.getClass().getSimpleName() + " due to circular reference!"));
-                    continue;
-                }
+            VCommandable vRoot = VClass.fromInstance(root, null, this);
+            if (vRoot == null) {
+                w(new StringMessage("Could not register root category: " + root.getClass().getSimpleName() + " due to circular reference!"));
+                continue;
             }
             rootCommands.add(vRoot);
         }
@@ -324,7 +319,7 @@ public class Edict {
             }
 
             for (VCommandable root : indexer.search(input.get(0), getSettings().matchThreshold, (vCommandable -> user.hasPermission(vCommandable.permission())))) {
-                d(new StringMessage("Running root: " + ((VClass) root).instance().getClass().getSimpleName()));
+                d(new StringMessage("Running root: " + root.name()));
                 if (root.run(input.subList(1, input.size()), user)) {
                     return;
                 }

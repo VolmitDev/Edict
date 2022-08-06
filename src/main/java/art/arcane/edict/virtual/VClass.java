@@ -45,7 +45,7 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
      * @throws NullPointerException if the {@link ParameterHandler} for any of the parameters of any methods of this class or any of its children is not registered
      * or if the {@link ContextHandler} for any of the contextual parameter of any methods of the {@code commandRoots} or any of its children is not registered
      */
-    public static @Nullable VClass fromInstance(@NotNull Object instance, @Nullable VClass parent, @NotNull Edict system) throws MissingResourceException, NullPointerException {
+    public static @Nullable VCommandable fromInstance(@NotNull Object instance, @Nullable VClass parent, @NotNull Edict system) throws MissingResourceException, NullPointerException {
 
         // Class
         Class<?> clazz = instance.getClass();
@@ -64,8 +64,10 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
             throw new MissingResourceException("@Command annotation not present on class " + clazz.getSimpleName(), clazz.getSimpleName(), "@Command");
         }
 
-        // Construct edict
+        // Annotation
         Command annotation = clazz.getDeclaredAnnotation(Command.class);
+
+        // Construct edict
         VClass category = new VClass(
                 annotation.name().isBlank() ? clazz.getSimpleName() : annotation.name(),
                 annotation,
@@ -94,6 +96,12 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
                     system
             );
             vMethod.params().addAll(VParam.paramsFromMethod(vMethod, method, system));
+
+            // Command
+            if (category.command.singleCommandCategory()) {
+                return vMethod;
+            }
+
             category.children.add(vMethod);
         }
 
@@ -137,7 +145,7 @@ public record VClass(@NotNull String name, @NotNull Command command, @NotNull Ob
             }
 
             // Success
-            VClass subcategory = VClass.fromInstance(fInstance, category, system);
+            VCommandable subcategory = VClass.fromInstance(fInstance, category, system);
             if (subcategory != null) {
                 category.children.add(subcategory);
             }

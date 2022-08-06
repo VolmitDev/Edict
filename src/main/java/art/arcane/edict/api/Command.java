@@ -49,4 +49,13 @@ public @interface Command {
      * @return The permission node for this decree command
      */
     String permission() default NO_PERMISSION_NEEDED;
+
+    /**
+     * Set to true if this category should be ignored, and the commands within it should be registered.
+     * This can be used to register commands directly, without the need for categories.
+     * This ensures the first command appearing in {@link Class#getDeclaredMethods()} is registered. Any others are ignored.
+     * Subcategories are also ignored.
+     * @return true if this category's commands should be used directly, omitting the category.
+     */
+    boolean singleCommandCategory() default false;
 }

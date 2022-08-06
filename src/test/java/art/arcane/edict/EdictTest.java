@@ -4,6 +4,8 @@ import art.arcane.edict.context.UserContext;
 import art.arcane.edict.testconstruct.*;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class EdictTest {
@@ -12,10 +14,9 @@ public class EdictTest {
         TODO: Complex command tests
         TODO: Ambiguous command tests (close calls)
         TODO: Suggestion tests
-        TODO: Test command as root
      */
 
-    public static final Edict SUT = Edict.builder(new TestCommandClass(), new TestCommandClassContext())
+    public static final Edict SUT = Edict.builder(new TestCommandClass(), new TestCommandClassContext(), new TestCommandCategory())
             .contextHandler(new TestContextValueContextHandler())
             .parameterHandler(new TestContextValueParameterHandler())
             .build();
@@ -41,5 +42,13 @@ public class EdictTest {
         SUT.command("context test", TESTUSER, true);
         assertTrue(TESTUSER.received.size() > 0);
         assertEquals(TestContextValue.value, TESTUSER.received.get(TESTUSER.received.size() - 1).string());
+    }
+
+    @Test
+    void rootCommandTest() {
+        TESTUSER.received.clear();
+        SUT.command("rootcommand", TESTUSER, true);
+        assertTrue(TESTUSER.received.size() > 0);
+        assertEquals("ran root command", TESTUSER.received.get(TESTUSER.received.size() - 1).string());
     }
 }

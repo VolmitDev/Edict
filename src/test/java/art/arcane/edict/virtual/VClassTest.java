@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class VClassTest {
 
     final Edict SYSTEM = EdictTest.SUT;
-    final VClass SUT = VClass.fromInstance(new TestCommandClass(), null, SYSTEM);
+    final VClass SUT = (VClass) VClass.fromInstance(new TestCommandClass(), null, SYSTEM);
 
     @Test
     void fromClass() {

@@ -134,7 +134,7 @@ public record VMethod(@NotNull Command command, @Nullable VClass parent, @NotNul
             user.send(getHelpFor(user));
             return true;
         }
-        user.send(new StringMessage("Running command " + name() + " with input: " + String.join(", ", input)));
+        user.send(new StringMessage("Running command " + name() + (input.isEmpty() ? " without input" : " with input: " + String.join(", ", input))));
         ParameterParser parser = new ParameterParser(input, params, user, system);
         Object[] values = parser.parse();
 

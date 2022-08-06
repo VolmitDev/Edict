@@ -217,7 +217,14 @@ public record VParam(@NotNull Param param, @NotNull Parameter parameter, @NotNul
     public void networkString(@NotNull StringBuilder builder, @NotNull String indent, @NotNull String currentIndent) {
         builder.append("\n").append(currentIndent).append("> ");
         appendNamesNetworkString(builder);
-        // TODO: Append details
+        if (param.defaultValue().isEmpty()) {
+            builder.append("(required) ");
+        } else {
+            builder.append("(default: ").append(param.defaultValue()).append(") ");
+        }
+        if (param.contextual()) {
+            builder.append("(contextual)");
+        }
     }
 
     @Override
