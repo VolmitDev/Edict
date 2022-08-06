@@ -11,7 +11,7 @@ class EdictTest {
     /*
         TODO: Complex command tests
         TODO: Ambiguous command tests (close calls)
-        TODO: Complex context
+        TODO: Suggestion tests
      */
 
     final Edict SUT = Edict.builder(new TestCommandClass(), new TestCommandClassContext())
