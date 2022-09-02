@@ -110,6 +110,7 @@ public class ParameterParser {
      * @return the cleaned command
      */
     public static @NotNull String cleanCommand(@NotNull String command) {
+        // TODO: Allow some of this stuff in parameters.
         while (command.contains("  ")) {
             command = command.replace("  ", " ");
         }
@@ -119,7 +120,7 @@ public class ParameterParser {
         while (command.contains("--")) {
             command = command.replace("--", "-");
         }
-        return command.replace(" =", "=");
+        return command.replace(" =", "=").replace("= ", "=");
     }
 
     /**

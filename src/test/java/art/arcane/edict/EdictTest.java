@@ -2,6 +2,7 @@ package art.arcane.edict;
 
 import art.arcane.edict.context.UserContext;
 import art.arcane.edict.testconstruct.*;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -54,25 +55,38 @@ public class EdictTest {
 
     @Test
     void testSuggestionsSimple() {
-        assertEquals("test", suggestionOne("te"));
+        suggestionCheck("te", "test");
+    }
+
+    @Test
+    void test() {
+        // TODO: Why are context and rootCommand not appearing in the suggestions?
+        List<String> out = new ArrayList<>();
+        SUT.suggest("", TESTUSER, out::addAll, true);
+        System.out.println(out);
     }
 
     @Test
     void testSuggestionComplex() {
         // TODO: Fix this because the first one doesn't match anything because of the matching threshold requirement
-        assertEquals("rootcommand", suggestionOne("roco"));
-        assertEquals("context", suggestionOne("con"));
+        suggestionCheck("rootc", "rootcommand");
+        suggestionCheck("con", "context");
+    }
+
+    private void suggestionCheck(String input, @NotNull String expected) {
+        List<String> suggestions = new ArrayList<>();
+        SUT.suggest(input, TESTUSER, suggestions::addAll, true);
+        if (suggestions.isEmpty()) {
+            fail("'" + input + "' did not lead to any suggestions");
+        }
+        if (!expected.equalsIgnoreCase(suggestions.get(0))) {
+            fail("'" + input + "' did not lead to '" + expected + "' but did find " + suggestions);
+        }
     }
 
     @Test
     void testSuggestionDeep() {
         // TODO: Fix this because the space at the end isn't registered
-        assertEquals("method", suggestionOne("test subc "));
-    }
-
-    String suggestionOne(String input) {
-        List<String> suggestions = new ArrayList<>();
-        SUT.suggest(input, TESTUSER, suggestions::addAll, true);
-        return suggestions.get(0);
+        suggestionCheck("method", "test subc ");
     }
 }

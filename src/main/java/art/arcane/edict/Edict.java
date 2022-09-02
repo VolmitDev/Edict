@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
@@ -374,23 +375,28 @@ public class Edict {
             new SystemContext().post(this);
 
             List<String> suggestions = new ArrayList<>();
-            for (VCommandable root : indexer.search(input.get(0), getSettings().matchThreshold, (vCommandable -> user.hasPermission(vCommandable.permission())))) {
+            List<VCommandable> roots = indexer.search(input.get(0), getSettings().matchThreshold, (vCommandable -> user.hasPermission(vCommandable.permission())));
+
+            if (roots.isEmpty()) {
+                suggestionOutput.accept(Collections.singletonList("<invalid>"));
+                return;
+            }
+
+            for (VCommandable root : roots) {
                 d(new StringMessage("Running root suggestions: " + ((VClass) root).instance().getClass().getSimpleName()));
                 suggestions.addAll(root.suggest(input.subList(1, input.size()), user));
             }
 
-            if (!suggestions.isEmpty()) {
-                suggestionOutput.accept(suggestions);
+            if (suggestions.isEmpty()) {
+                suggestionOutput.accept(Collections.singletonList("<none>"));
                 return;
             }
 
-            d(new StringMessage("Could not find suitable command for input: " + fCommand));
-            user.send(new StringMessage("Failed to run any commands for your input. Please try (one of): " + String.join(", ", rootCommands.stream().map(VCommandable::name).toList())));
-
+            suggestionOutput.accept(suggestions);
         };
 
         if (forceSync) {
-            d(new StringMessage("Running command in forced sync. Likely for testing purposes."));
+            d(new StringMessage("Running suggestion in forced sync. Likely for testing purposes."));
             r.run();
         } else {
             new Thread(r).start();

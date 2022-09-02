@@ -7,7 +7,6 @@ import art.arcane.edict.virtual.VCommandable;
 import edu.gatech.gtri.bktree.BkTreeSearcher;
 import edu.gatech.gtri.bktree.Metric;
 import edu.gatech.gtri.bktree.MutableBkTree;
-import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -65,7 +64,7 @@ public class BKTreeIndexer {
 
         // Min distance (best)
         OptionalInt result = vClass.allNames().stream().mapToInt(name -> {
-            if (name.equals(input.name())) {
+            if (input.name().isBlank() || name.equals(input.name())) {
                 return 0;
             } else if (name.startsWith(input.name())) {
                 return 1;
@@ -78,7 +77,7 @@ public class BKTreeIndexer {
 
         // Null result
         if (result.isEmpty()) {
-            throw new IllegalArgumentException("First argument has no names!");
+            throw new IllegalArgumentException("VCommandable argument has no names!");
         }
 
         return result.getAsInt();
@@ -162,7 +161,7 @@ public class BKTreeIndexer {
         }
 
         @Override
-        public @NotNull String[] aliases() {
+        public @NotNull String @NotNull [] aliases() {
             return aliases;
         }
 
